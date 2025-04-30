@@ -1,0 +1,25 @@
+//  Fetch all categories
+let Categories = query:
+    """
+    T
+    | distinct Category
+    """;
+
+//  Run query on each partition
+let UnionQuery = union CategoryPartition in Categories to typeof(string) with (concurrency=5)
+    {
+        return query:
+            """
+                T
+                | where Category==CategoryPartition
+                | summarize Cardinality=count() by Category, SubCategory
+                | top 50 by Cardinality
+            """;
+    };
+
+//  Re-doing the top 50 on the union
+return query:
+    """
+        UnionQuery
+        | top 50 by Cardinality
+    """;
