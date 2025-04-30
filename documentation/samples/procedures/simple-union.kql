@@ -21,7 +21,7 @@ let Query3 = query:
         | top 50 by Cardinality
     """;
 //  Each query is injected in the union query
-let UnionQuery = query:
+let UnionQuery = query using (Query1, Query2, Query3):
     """
         union Query1, Query2, Query3
         | top 50 by Cardinality

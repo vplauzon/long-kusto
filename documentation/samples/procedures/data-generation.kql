@@ -1,0 +1,77 @@
+let Days = query:
+    """
+        range i from 1 to 90 step 1
+        | project Day = bin(now(),1d)-i*1d
+    """;
+
+//  Ensure table exists
+command:
+    """
+        .create-merge table Telemetry(Source:string, Destination:string, Timestamp:datetime)
+    """;
+
+//  Generate data for each day
+
+//  Fire & forget ingestion mode
+foreach Day in Days with (concurrency=10)
+{
+    //  Here the underlying query is getting exported to storage and then queued for ingestion
+    append in Telemetry:
+        query using (Day):
+            """
+                print Timestamp=Day
+                | extend SourceRangeIds=range(1, 5000, 1)
+                | extend DestinationRangeIds=SourceRangeIds
+                | mv-expand SourceRangeIds to typeof(string)
+                | mv-expand DestinationRangeIds to typeof(string)
+                | extend Source=strcat("s-", SourceRangeIds)
+                | extend Destination=strcat("d-", DestinationRangeIds)
+                | project Source, Destination, Timestamp
+            """;
+}
+
+//  Await each ingestion:  limited by concurrency
+foreach Day in Days with (concurrency=10)
+{
+    //  Technically it's a scalar but it can't be used by a query nor returned
+    let OperationId = append in Telemetry:
+        query using (Day):
+            """
+                print Timestamp=Day
+                | extend SourceRangeIds=range(1, 5000, 1)
+                | extend DestinationRangeIds=SourceRangeIds
+                | mv-expand SourceRangeIds to typeof(string)
+                | mv-expand DestinationRangeIds to typeof(string)
+                | extend Source=strcat("s-", SourceRangeIds)
+                | extend Destination=strcat("d-", DestinationRangeIds)
+                | project Source, Destination, Timestamp
+            """;
+    
+    //  This limits to the concurrency level of queuing
+    await OperationId;
+}
+
+//  Await all ingestions
+//  This union will be detected to be used only in blobs so will be exported to blobs
+let UnionQuery = union Day in Days to typeof(datetime) with (concurrency=10)
+{
+    return query using (Day):
+    """
+        print Timestamp=Day
+        | extend SourceRangeIds=range(1, 5000, 1)
+        | extend DestinationRangeIds=SourceRangeIds
+        | mv-expand SourceRangeIds to typeof(string)
+        | mv-expand DestinationRangeIds to typeof(string)
+        | extend Source=strcat("s-", SourceRangeIds)
+        | extend Destination=strcat("d-", DestinationRangeIds)
+        | project Source, Destination, Timestamp
+    """;
+}
+
+//  This will ingest all blobs of the union of exports
+//  The "operation id" will be the union of a bunch of ingestions
+let OperationId = append in Telemetry:
+    UnionQuery;
+
+//  Awaits all of the underlying ingestion
+await OperationId;

@@ -1,0 +1,13 @@
+//  Check https://github.com/meineGlock20/ListToTableDisplay
+
+//  List all jobs, last created first
+//  Displays job id, job name, start time, end time, duration, status
+.show jobs
+
+//  Create job
+//  Returns job id
+.create job "https://..." "MyDatabase"
+//  Script...  end with empty line
+
+//  Stop job
+.cancel job <job id>
