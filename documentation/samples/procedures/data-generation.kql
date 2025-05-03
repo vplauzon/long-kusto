@@ -13,7 +13,7 @@ command:
 //  Generate data for each day
 
 //  Fire & forget ingestion mode
-foreach Day in Days with (concurrency=10)
+foreach Day to typeof(datetime) in Days with (concurrency=10)
 {
     //  Here the underlying query is getting exported to storage and then queued for ingestion
     append in Telemetry:
@@ -31,7 +31,7 @@ foreach Day in Days with (concurrency=10)
 }
 
 //  Await each ingestion:  limited by concurrency
-foreach Day in Days with (concurrency=10)
+foreach Day to typeof(datetime) in Days with (concurrency=10)
 {
     //  Technically it's a scalar but it can't be used by a query nor returned
     let OperationId = append in Telemetry:

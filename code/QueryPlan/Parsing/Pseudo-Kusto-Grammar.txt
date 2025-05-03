@@ -1,0 +1,93 @@
+﻿#	Comments & interleaves
+rule(interleave=false) comment = "//" (. - ("\r" | "\n"))*;
+rule(interleave=false) blockSpacer = " " | "\t" | "\r";
+rule(interleave=false) padding = blockSpacer | "\n" | comment;
+interleave = padding;
+
+#	tokens
+rule(interleave=false) identifier = ("a".."z" | "A".."Z") ("a".."z" | "A".."Z" | "0".."9")* => text;
+rule(interleave=false) boolean = "true" | "false" => boolean(text);
+rule(interleave=false) number = ("0".."9");
+rule(interleave=false) integer = number+ => integer(text);
+rule(interleave=false) float = "-"? number* ("." number+)? => float(text);
+rule(interleave=false) character = normal:(. - ("\"" | "\r" | "\n" | "\\"))
+	| escapeQuote:("\\" "\"") | escapeBackslash:"\\\\"
+	| escapeLetter:("\\" l:("n" | "r" | "t" | "v"))
+	| escapeHexa:("\\x" h:("0".."9" | "a".."f" | "A".."F"){1,2});
+rule(interleave=false) singleQuotableString = ((. - "'") | "\\'")* => text;
+rule(interleave=false) doubleQuotableString = ((. - '"') | '\\"')* => text;
+rule(interleave=false) singleQuotedString = "'" q:singleQuotableString "'" => q;
+rule(interleave=false) doubleQuotedString = '"' q:doubleQuotableString '"' => q;
+rule(interleave=false) quotedString = doubleQuotedString | singleQuotedString;
+rule(interleave=false) trippleDoubleQuote = '"""';
+#  Using non-greedy *? quantifier
+rule(interleave=false) trippleDoubleQuotedString =
+  trippleDoubleQuote q:(.*? => text) trippleDoubleQuote => q;
+
+#	Litterals
+rule literalValue = boolean:boolean | integer:integer | float:float | string:quotedString;
+
+#	Commons
+rule toType = "to" "typeof" "(" type:identifier ")" => type;
+rule propertyValue = boolean:boolean | integer:integer; 
+rule propertyAssignation = id:identifier "=" value:propertyValue
+	=> {"name" : id, "value":value};
+rule propertyAssignations = head:propertyAssignation
+	tail:("," pa:propertyAssignation => pa)* => prepend(head, tail);
+rule withProperties = "with" "(" properties:propertyAssignations ")"
+	=> properties;
+rule idList = head:identifier tail:("," id:identifier => id)*
+	=> prepend(head, tail);
+
+#	Query
+rule usingResultSets = "using" "(" idList:idList ")" => idList;
+rule query = "query" u:usingResultSets? ":" q:trippleDoubleQuotedString ";"
+	=> { "text" : q, "using":firstOrNull(u) };
+
+#	Command
+rule command = "command" ":" q:trippleDoubleQuotedString ";"
+	=> { "text" : q };
+
+#	Append
+rule append = "append" "in" table:identifier ":" statement:statement
+	=> { "table" : table, "statement" : statement};
+
+#	Await
+rule await = "await" id:identifier ";"
+	=> { "identifier" : id };
+
+#	Union
+rule union = "union" iterator:identifier type:toType? "in" resultSet:identifier
+	withProperties:withProperties?
+	"{"
+	statements:statement*
+	"}"
+	=> { "iterator":iterator, "resultSet":resultSet,
+	"type" : firstOrNull(type),
+	"properties" : coalesce([firstOrNull(withProperties), []]),
+	"statements":statements};
+
+#	For-Each
+rule forEach = "foreach" iterator:identifier type:toType? "in" resultSet:identifier
+	withProperties:withProperties?
+	"{"
+	statements:statement*
+	"}"
+	=> { "iterator":iterator, "resultSet":resultSet,
+	"type" : firstOrNull(type),
+	"properties" : coalesce([firstOrNull(withProperties), []]),
+	"statements":statements};
+
+#	Identifier statement
+rule identifierStatement = identifier:identifier ";" => identifier;
+
+#	Statements
+rule innerStatement = query:query | command:command | forEach:forEach | union:union
+	| await:await | append:append | identifier:identifierStatement;
+rule returnPrefix = ("return" => true) | ("" => false);
+rule letIdPrefix = ("let" id:identifier "=" => id)? => firstOrNull(defaultOutput);
+rule prefix = returnPrefix:returnPrefix | letIdPrefix:letIdPrefix;
+rule (recursive=true) statement = p:prefix i:innerStatement => { "prefix":p, "innerStatement" : i};
+
+#	main rule
+rule main = statement*;
