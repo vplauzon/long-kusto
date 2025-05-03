@@ -42,7 +42,7 @@ rule idList = head:identifier tail:("," id:identifier => id)*
 #	Query
 rule usingResultSets = "using" "(" idList:idList ")" => idList;
 rule query = "query" u:usingResultSets? ":" q:trippleDoubleQuotedString ";"
-	=> { "text" : q, "using":firstOrNull(u) };
+	=> { "text" : q, "using":coalesce([firstOrNull(u), []]) };
 
 #	Command
 rule command = "command" ":" q:trippleDoubleQuotedString ";"

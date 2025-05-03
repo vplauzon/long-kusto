@@ -1,4 +1,4 @@
 ﻿namespace QueryPlan.Parsing
 {
-    internal record StatementScript(PrefixScript Prefix);
+    internal record StatementScript(PrefixScript Prefix, InnerStatementScript InnerStatement);
 }
