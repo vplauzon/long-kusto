@@ -1,4 +1,4 @@
 ﻿namespace QueryPlan.Parsing
 {
-    public record Script();
+    internal record Script(StatementScript[] Statements);
 }

@@ -90,4 +90,4 @@ rule prefix = returnPrefix:returnPrefix | letIdPrefix:letIdPrefix;
 rule (recursive=true) statement = p:prefix i:innerStatement => { "prefix":p, "innerStatement" : i};
 
 #	main rule
-rule main = statement*;
+rule main = statement* => { "statements" : defaultOutput};
