@@ -9,15 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Parsing\Pseudo-Kusto-Grammar.txt" />
+    <None Remove="Parsing\Long-Kusto-Grammar.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Parsing\Pseudo-Kusto-Grammar.txt" />
+    <EmbeddedResource Include="Parsing\Long-Kusto-Grammar.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GramParser" Version="0.10.0.10" />
+    <PackageReference Include="GramParser" Version="0.11.0.11" />
   </ItemGroup>
 
 </Project>
