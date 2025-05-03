@@ -1,4 +1,10 @@
-﻿namespace QueryPlan.Parsing
+﻿
+namespace QueryPlan.Parsing
 {
-    internal record Script(StatementScript[] Statements);
+    internal record Script(StatementScript[] Statements)
+    {
+        internal void StaticAnalysis()
+        {
+        }
+    }
 }
