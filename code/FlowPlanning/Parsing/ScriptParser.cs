@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QueryPlan.Parsing
+namespace FlowPlanning.Parsing
 {
     internal static class ScriptParser
     {

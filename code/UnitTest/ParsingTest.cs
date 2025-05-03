@@ -1,21 +1,13 @@
-﻿using QueryPlan.Parsing;
+﻿using FlowPlanning.Parsing;
 
 namespace UnitTest
 {
-    public class ParsingTest
+    public class ParsingTest : BaseTest
     {
         [Fact]
-        public void Test1()
+        public void SimpleQuery()
         {
-            var text = @"let MyQuery = query:
-    """"""
-        T
-        | where Category==""Red""
-        | summarize Cardinality=count() by Category, SubCategory
-        | top 50 by Cardinality
-    """""";
-
-return MyQuery;";
+            var text = GetResource("Parsing.SimpleQuery.kql");
             var script = ScriptParser.ParseScript(text);
 
             Assert.Equal(2, script.Statements.Count());
