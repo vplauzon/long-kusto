@@ -83,7 +83,7 @@ rule identifierStatement = identifier:identifier ";" => identifier;
 
 #	Statements
 rule innerStatement = query:query | command:command | forEach:forEach | union:union
-	| await:await | append:append | identifier:identifierStatement;
+	| await:await | append:append | referencedIdentifier:identifierStatement;
 rule returnPrefix = ("return" => true) | ("" => false);
 rule letIdPrefix = ("let" id:identifier "=" => id)? => firstOrNull(defaultOutput);
 rule prefix = returnPrefix:returnPrefix | letIdPrefix:letIdPrefix;

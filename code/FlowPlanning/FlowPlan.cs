@@ -12,6 +12,9 @@ namespace FlowPlanning
         public static FlowPlan CreatePlan(Script script)
         {
             script.StaticAnalysis();
+            script = script.TransformToReferenceReturnOnly();
+
+            //var graph = BuildGraph(script);
 
             throw new NotImplementedException();
         }
