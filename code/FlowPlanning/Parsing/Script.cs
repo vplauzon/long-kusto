@@ -64,7 +64,7 @@ namespace FlowPlanning.Parsing
                 {
                     throw new NotImplementedException();
                 }
-                if (statement.InnerStatement.Union != null)
+                else if (statement.InnerStatement.Union != null)
                 {
                     throw new NotImplementedException();
                 }
@@ -87,7 +87,7 @@ namespace FlowPlanning.Parsing
                 {
                     throw new NotImplementedException();
                 }
-                if (statement.InnerStatement.Union != null)
+                else if (statement.InnerStatement.Union != null)
                 {
                     throw new NotImplementedException();
                 }
