@@ -17,5 +17,17 @@ namespace UnitTest.QueryPlanning
             Assert.Equal(PersistanceMode.Blob, plan.Steps[0].PersistanceMode);
             Assert.Equal("MyQuery", plan.Steps[1].IdReference);
         }
+
+        [Fact]
+        public void DirectSimpleQuery()
+        {
+            var text = GetResource("QueryPlanning.DirectSimpleQuery.kql");
+            var script = ScriptParser.ParseScript(text);
+            var plan = FlowPlan.CreatePlan(script);
+
+            Assert.Equal(2, plan.Steps.Count());
+            Assert.NotNull(plan.Steps[0].QueryPlan);
+            Assert.NotNull(plan.Steps[1].IdReference);
+        }
     }
 }

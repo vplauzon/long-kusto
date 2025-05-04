@@ -1,0 +1,7 @@
+﻿return query:
+    """
+        T
+        | where Category==""Red""
+        | summarize Cardinality=count() by Category, SubCategory
+        | top 50 by Cardinality
+    """;
