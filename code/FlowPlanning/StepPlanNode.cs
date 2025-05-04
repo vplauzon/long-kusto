@@ -76,6 +76,7 @@ namespace FlowPlanning
                         statement.Prefix.LetIdPrefix,
                         newNode!);
                 }
+                builder.Add(newNode);
             }
 
             return builder.ToImmutableArray();
