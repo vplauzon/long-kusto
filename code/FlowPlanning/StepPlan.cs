@@ -1,7 +1,8 @@
 ﻿namespace FlowPlanning
 {
     internal record StepPlan(
-        string? ValueName,
+        string? Id,
         PersistanceMode PersistanceMode,
-        QueryPlan? QueryPlan);
+        QueryPlan? QueryPlan,
+        string? IdReference);
 }

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Parsing\SimpleQuery.kql" />
+    <EmbeddedResource Include="QueryPlanning\SimpleQuery.kql" />
   </ItemGroup>
 
   <ItemGroup>

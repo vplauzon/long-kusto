@@ -1,6 +1,6 @@
 ﻿using FlowPlanning.Parsing;
 
-namespace UnitTest
+namespace UnitTest.Parsing
 {
     public class ParsingTest : BaseTest
     {

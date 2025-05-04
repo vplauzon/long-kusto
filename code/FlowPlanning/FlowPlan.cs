@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FlowPlanning
 {
-    internal record FlowPlan(StepPlan[] StepPlans)
+    internal record FlowPlan(StepPlan[] Steps)
     {
         public static FlowPlan CreatePlan(Script script)
         {
