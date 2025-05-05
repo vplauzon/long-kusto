@@ -29,5 +29,15 @@ namespace UnitTest.QueryPlanning
             Assert.NotNull(plan.Steps[0].QueryPlan);
             Assert.NotNull(plan.Steps[1].IdReference);
         }
+
+        [Fact]
+        public void UnnamedQuery()
+        {
+            var text = GetResource("Planning.QueryPlanning.UnnamedQuery.kql");
+            var script = ScriptParser.ParseScript(text);
+            var plan = FlowPlan.CreatePlan(script);
+
+            Assert.Empty(plan.Steps);
+        }
     }
 }
