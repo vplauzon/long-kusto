@@ -66,7 +66,7 @@ namespace FlowPlanning.Parsing
                 }
                 else if (statement.InnerStatement.Union != null)
                 {
-                    throw new NotImplementedException();
+                    CheckReturns(statement.InnerStatement.Union.Statements, true);
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace FlowPlanning.Parsing
                 }
                 else if (statement.InnerStatement.Union != null)
                 {
-                    throw new NotImplementedException();
+                    CheckPrefix(statement.InnerStatement.Union.Statements);
                 }
             }
         }

@@ -66,6 +66,10 @@ namespace FlowPlanning
                         newNode = NewQuery(accessibleNodes, statement);
                     }
                 }
+                else if (statement.InnerStatement.Union != null)
+                {
+                    newNode = NewUnion(accessibleNodes, statement);
+                }
                 else if (statement.InnerStatement.ReferencedIdentifier != null)
                 {
                     newNode = NewReferencedIdentifier(accessibleNodes, statement);
@@ -89,41 +93,17 @@ namespace FlowPlanning
             return builder.ToImmutableArray();
         }
 
-        private static StepPlanNode NewReferencedIdentifier(
-            IImmutableDictionary<string, StepPlanNode> accessibleNodes,
-            StatementScript statement)
-        {
-            var referencedId = statement.InnerStatement.ReferencedIdentifier!;
-
-            if (!accessibleNodes.TryGetValue(referencedId, out var referencedNode))
-            {
-                throw new PlanningException(
-                    $"Referenced identifier doesn't exist:  '{referencedId}");
-            }
-            else
-            {
-                var stepPlan = new StepPlan(
-                    statement.Prefix.LetIdPrefix,
-                    referencedNode.StepPlan.PersistanceMode,
-                    null,
-                    referencedId);
-                var stepPlanNode = new StepPlanNode(stepPlan);
-
-                stepPlanNode.AddDependency(referencedNode);
-
-                return stepPlanNode;
-            }
-        }
-
         private static StepPlanNode NewQuery(
             IImmutableDictionary<string, StepPlanNode> accessibleNodes,
             StatementScript statement)
         {
-            var queryPlan = new QueryPlan(statement.InnerStatement.Query!);
+            var queryPlan = new QueryPlan(
+                PersistanceMode.StoredQuery,
+                statement.InnerStatement.Query!);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
-                PersistanceMode.StoredQuery,
                 queryPlan,
+                null,
                 null);
             var stepPlanNode = new StepPlanNode(stepPlan);
 
@@ -141,6 +121,82 @@ namespace FlowPlanning
             }
 
             return stepPlanNode;
+        }
+
+        private static StepPlanNode? NewUnion(
+            IImmutableDictionary<string, StepPlanNode> accessibleNodes,
+            StatementScript statement)
+        {
+            var concurrency = PropertyAssignationScript.GetLongProperty(
+                statement.InnerStatement.Union!.Properties,
+                "concurrency");
+            var resultSet = statement.InnerStatement.Union!.ResultSet;
+
+            if (!accessibleNodes.TryGetValue(resultSet, out var referencedNode))
+            {
+                throw new PlanningException(
+                    $"Referenced identifier doesn't exist:  '{resultSet}");
+            }
+            else
+            {
+                var unionPlan = new UnionPlan(
+                    PersistanceMode.StoredQuery,
+                    statement.InnerStatement.Union!.Iterator,
+                    resultSet,
+                    GetKustoType(statement.InnerStatement.Union!.Type),
+                    concurrency);
+                var stepPlan = new StepPlan(
+                    statement.Prefix.LetIdPrefix!,
+                    null,
+                    unionPlan,
+                    null);
+                var stepPlanNode = new StepPlanNode(stepPlan);
+
+                stepPlanNode.AddDependency(referencedNode);
+
+                return stepPlanNode;
+            }
+        }
+
+        private static KustoType GetKustoType(string? type)
+        {
+            switch (type)
+            {
+                case null:
+                case "dynamic":
+                    return KustoType.Dynamic;
+                case "string":
+                    return KustoType.String;
+
+                default:
+                    throw new NotSupportedException($"Kusto type '{type}'");
+            }
+        }
+
+        private static StepPlanNode NewReferencedIdentifier(
+            IImmutableDictionary<string, StepPlanNode> accessibleNodes,
+            StatementScript statement)
+        {
+            var referencedId = statement.InnerStatement.ReferencedIdentifier!;
+
+            if (!accessibleNodes.TryGetValue(referencedId, out var referencedNode))
+            {
+                throw new PlanningException(
+                    $"Referenced identifier doesn't exist:  '{referencedId}");
+            }
+            else
+            {
+                var stepPlan = new StepPlan(
+                    statement.Prefix.LetIdPrefix ?? "$return",
+                    null,
+                    null,
+                    referencedId);
+                var stepPlanNode = new StepPlanNode(stepPlan);
+
+                stepPlanNode.AddDependency(referencedNode);
+
+                return stepPlanNode;
+            }
         }
         #endregion
     }
