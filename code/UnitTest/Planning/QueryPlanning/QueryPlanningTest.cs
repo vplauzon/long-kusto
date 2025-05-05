@@ -8,7 +8,7 @@ namespace UnitTest.QueryPlanning
         [Fact]
         public void SimpleQuery()
         {
-            var text = GetResource("QueryPlanning.SimpleQuery.kql");
+            var text = GetResource("Planning.QueryPlanning.SimpleQuery.kql");
             var script = ScriptParser.ParseScript(text);
             var plan = FlowPlan.CreatePlan(script);
 
@@ -21,7 +21,7 @@ namespace UnitTest.QueryPlanning
         [Fact]
         public void DirectSimpleQuery()
         {
-            var text = GetResource("QueryPlanning.DirectSimpleQuery.kql");
+            var text = GetResource("Planning.QueryPlanning.DirectSimpleQuery.kql");
             var script = ScriptParser.ParseScript(text);
             var plan = FlowPlan.CreatePlan(script);
 

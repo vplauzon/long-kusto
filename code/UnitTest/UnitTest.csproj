@@ -8,9 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="QueryPlanning\**" />
+    <EmbeddedResource Remove="QueryPlanning\**" />
+    <None Remove="QueryPlanning\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Planning\QueryPlanning\DirectSimpleQuery.kql" />
+    <None Remove="Planning\QueryPlanning\SimpleQuery.kql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Parsing\SimpleQuery.kql" />
-    <EmbeddedResource Include="QueryPlanning\DirectSimpleQuery.kql" />
-    <EmbeddedResource Include="QueryPlanning\SimpleQuery.kql" />
+    <EmbeddedResource Include="Planning\QueryPlanning\DirectSimpleQuery.kql" />
+    <EmbeddedResource Include="Planning\QueryPlanning\SimpleQuery.kql" />
   </ItemGroup>
 
   <ItemGroup>

@@ -60,7 +60,11 @@ namespace FlowPlanning
 
                 if (statement.InnerStatement.Query != null)
                 {
-                    newNode = NewQuery(accessibleNodes, statement);
+                    if (statement.Prefix.LetIdPrefix != null
+                        || statement.Prefix.ReturnPrefix)
+                    {   //  We don't plan for queries that aren't referenced
+                        newNode = NewQuery(accessibleNodes, statement);
+                    }
                 }
                 else if (statement.InnerStatement.ReferencedIdentifier != null)
                 {
@@ -70,13 +74,16 @@ namespace FlowPlanning
                 {
                     throw new NotImplementedException();
                 }
-                if (statement.Prefix.LetIdPrefix != null)
+                if (newNode != null)
                 {
-                    accessibleNodes = accessibleNodes.Add(
-                        statement.Prefix.LetIdPrefix,
-                        newNode!);
+                    if (statement.Prefix.LetIdPrefix != null)
+                    {
+                        accessibleNodes = accessibleNodes.Add(
+                            statement.Prefix.LetIdPrefix,
+                            newNode!);
+                    }
+                    builder.Add(newNode);
                 }
-                builder.Add(newNode);
             }
 
             return builder.ToImmutableArray();
