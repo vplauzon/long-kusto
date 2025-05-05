@@ -1,14 +1,14 @@
 ﻿using FlowPlanning;
 using FlowPlanning.Parsing;
 
-namespace UnitTest.QueryPlanning
+namespace UnitTest.Planning.SimpleQueryPlanning
 {
     public class QueryPlanningTest : BaseTest
     {
         [Fact]
         public void SimpleQuery()
         {
-            var text = GetResource("Planning.QueryPlanning.SimpleQuery.kql");
+            var text = GetResource("Planning.SimpleQueryPlanning.SimpleQuery.kql");
             var script = ScriptParser.ParseScript(text);
             var plan = FlowPlan.CreatePlan(script);
 
@@ -22,7 +22,7 @@ namespace UnitTest.QueryPlanning
         [Fact]
         public void DirectSimpleQuery()
         {
-            var text = GetResource("Planning.QueryPlanning.DirectSimpleQuery.kql");
+            var text = GetResource("Planning.SimpleQueryPlanning.DirectSimpleQuery.kql");
             var script = ScriptParser.ParseScript(text);
             var plan = FlowPlan.CreatePlan(script);
 
@@ -34,7 +34,7 @@ namespace UnitTest.QueryPlanning
         [Fact]
         public void UnnamedQuery()
         {
-            var text = GetResource("Planning.QueryPlanning.UnnamedQuery.kql");
+            var text = GetResource("Planning.SimpleQueryPlanning.UnnamedQuery.kql");
             var script = ScriptParser.ParseScript(text);
             var plan = FlowPlan.CreatePlan(script);
 

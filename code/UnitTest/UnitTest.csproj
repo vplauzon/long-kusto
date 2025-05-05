@@ -14,15 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Planning\QueryPlanning\DirectSimpleQuery.kql" />
-    <None Remove="Planning\QueryPlanning\SimpleQuery.kql" />
+    <None Remove="Planning\SimpleQueryPlanning\DirectSimpleQuery.kql" />
+    <None Remove="Planning\SimpleQueryPlanning\SimpleQuery.kql" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Parsing\SimpleQuery.kql" />
-    <EmbeddedResource Include="Planning\QueryPlanning\DirectSimpleQuery.kql" />
-    <EmbeddedResource Include="Planning\QueryPlanning\UnnamedQuery.kql" />
-    <EmbeddedResource Include="Planning\QueryPlanning\SimpleQuery.kql" />
+    <EmbeddedResource Include="Planning\SimpleQueryPlanning\DirectSimpleQuery.kql" />
+    <EmbeddedResource Include="Planning\SimpleQueryPlanning\UnnamedQuery.kql" />
+    <EmbeddedResource Include="Planning\SimpleQueryPlanning\SimpleQuery.kql" />
   </ItemGroup>
 
   <ItemGroup>
