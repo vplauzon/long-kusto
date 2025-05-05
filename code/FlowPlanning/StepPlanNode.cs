@@ -94,12 +94,6 @@ namespace FlowPlanning
             StatementScript statement)
         {
             var referencedId = statement.InnerStatement.ReferencedIdentifier!;
-            var stepPlan = new StepPlan(
-                statement.Prefix.LetIdPrefix,
-                PersistanceMode.Blob,
-                null,
-                referencedId);
-            var stepPlanNode = new StepPlanNode(stepPlan);
 
             if (!accessibleNodes.TryGetValue(referencedId, out var referencedNode))
             {
@@ -108,10 +102,17 @@ namespace FlowPlanning
             }
             else
             {
-                stepPlanNode.AddDependency(referencedNode);
-            }
+                var stepPlan = new StepPlan(
+                    statement.Prefix.LetIdPrefix,
+                    referencedNode.StepPlan.PersistanceMode,
+                    null,
+                    referencedId);
+                var stepPlanNode = new StepPlanNode(stepPlan);
 
-            return stepPlanNode;
+                stepPlanNode.AddDependency(referencedNode);
+
+                return stepPlanNode;
+            }
         }
 
         private static StepPlanNode NewQuery(
@@ -121,7 +122,7 @@ namespace FlowPlanning
             var queryPlan = new QueryPlan(statement.InnerStatement.Query!);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
-                PersistanceMode.Blob,
+                PersistanceMode.StoredQuery,
                 queryPlan,
                 null);
             var stepPlanNode = new StepPlanNode(stepPlan);
