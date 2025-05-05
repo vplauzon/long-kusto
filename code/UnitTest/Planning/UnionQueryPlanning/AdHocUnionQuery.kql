@@ -1,0 +1,21 @@
+﻿let Query1 = query:
+    """
+        T
+        | where Category=="Red"
+        | summarize Cardinality=count() by Category, SubCategory
+        | top 50 by Cardinality
+    """;
+let Query2 = query:
+    """
+        T
+        | where Category=="Green"
+        | summarize Cardinality=count() by Category, SubCategory
+        | top 50 by Cardinality
+    """;
+let UnionQuery = query using (Query1, Query2):
+    """
+        union Query1, Query2
+        | top 50 by Cardinality
+    """;
+
+return UnionQuery;

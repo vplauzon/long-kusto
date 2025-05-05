@@ -3,7 +3,7 @@ using FlowPlanning.Parsing;
 
 namespace UnitTest.Planning.SimpleQueryPlanning
 {
-    public class QueryPlanningTest : BaseTest
+    public class SimpleQueryPlanningTest : BaseTest
     {
         [Fact]
         public void SimpleQuery()
