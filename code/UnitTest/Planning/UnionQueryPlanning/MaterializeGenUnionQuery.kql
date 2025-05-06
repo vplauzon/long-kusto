@@ -1,0 +1,21 @@
+﻿//  Fetch all categories
+let Categories = query:
+    """
+    T
+    | distinct Category
+    """;
+
+//  Run query on each partition
+let UnionQuery = union CategoryPartition to typeof(string) in Categories with (concurrency=5)
+    {
+        return query using (CategoryPartition):
+            """
+                T
+                | where Category==CategoryPartition
+                | summarize Cardinality=count() by Category, SubCategory
+                | top 50 by Cardinality
+            """;
+    }
+
+//  Returning the union:  this will force a materialization of the union
+return UnionQuery;

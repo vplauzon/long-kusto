@@ -15,8 +15,6 @@ namespace UnitTest.Planning.SimpleQueryPlanning
             Assert.Equal(2, plan.Steps.Count());
             Assert.Equal("MyQuery", plan.Steps[0].Id);
             Assert.NotNull(plan.Steps[0].QueryPlan);
-            //  The query should be persisted in stored query to optimize return
-            Assert.Equal(PersistanceMode.StoredQuery, plan.Steps[0].QueryPlan!.PersistanceMode);
             Assert.Equal("$return", plan.Steps[1].Id);
             Assert.Equal("MyQuery", plan.Steps[1].IdReference);
         }

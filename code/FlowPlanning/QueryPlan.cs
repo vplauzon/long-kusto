@@ -2,5 +2,5 @@
 
 namespace FlowPlanning
 {
-    internal record QueryPlan(PersistanceMode PersistanceMode, QueryScript QueryScript);
+    internal record QueryPlan(QueryScript QueryScript);
 }

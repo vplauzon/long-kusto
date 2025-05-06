@@ -33,5 +33,21 @@ namespace UnitTest.Planning.UnionQueryPlanning
             Assert.False(plan.Steps[1].UnionPlan!.IsLazyExecuted);
             Assert.Equal("$return", plan.Steps[3].Id);
         }
+
+        [Fact]
+        public void MaterializeGenUnionQuery()
+        {
+            var text = GetResource("Planning.UnionQueryPlanning.MaterializeGenUnionQuery.kql");
+            var script = ScriptParser.ParseScript(text);
+            var plan = FlowPlan.CreatePlan(script);
+
+            Assert.Equal(4, plan.Steps.Count());
+            Assert.Equal("Categories", plan.Steps[0].Id);
+            Assert.Equal("UnionQuery", plan.Steps[1].Id);
+            Assert.NotNull(plan.Steps[1].UnionPlan);
+            Assert.False(plan.Steps[1].UnionPlan!.IsLazyExecuted);
+            Assert.NotNull(plan.Steps[2].QueryPlan);
+            Assert.Equal("$return", plan.Steps[3].Id);
+        }
     }
 }

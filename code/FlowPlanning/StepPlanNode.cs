@@ -97,9 +97,7 @@ namespace FlowPlanning
             IImmutableDictionary<string, StepPlanNode> accessibleNodes,
             StatementScript statement)
         {
-            var queryPlan = new QueryPlan(
-                PersistanceMode.StoredQuery,
-                statement.InnerStatement.Query!);
+            var queryPlan = new QueryPlan(statement.InnerStatement.Query!);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
                 queryPlan,
