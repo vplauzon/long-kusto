@@ -140,7 +140,7 @@ namespace FlowPlanning
             else
             {
                 var unionPlan = new UnionPlan(
-                    PersistanceMode.StoredQuery,
+                    false,
                     statement.InnerStatement.Union!.Iterator,
                     resultSet,
                     GetKustoType(statement.InnerStatement.Union!.Type),

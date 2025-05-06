@@ -3,7 +3,7 @@
 namespace FlowPlanning
 {
     internal record UnionPlan(
-        PersistanceMode PersistanceMode,
+        bool IsLazyExecuted,
         string Iterator,
         string ResultSet,
         KustoType Type,
