@@ -1,0 +1,22 @@
+﻿using FlowPlanning;
+using FlowPlanning.Parsing;
+
+namespace UnitTest.Planning.ShowCommandPlanning
+{
+    public class ShowCommandPlanningTest : BaseTest
+    {
+        [Fact]
+        public void ShowCommand()
+        {
+            var text = GetResource("Planning.ShowCommandPlanning.ShowCommand.kql");
+            var script = ScriptParser.ParseScript(text);
+            var plan = FlowPlan.CreatePlan(script);
+
+            Assert.Equal(2, plan.Steps.Count());
+            Assert.Equal("Result", plan.Steps[0].Id);
+            Assert.NotNull(plan.Steps[0].ShowCommandPlan);
+            Assert.Equal("$return", plan.Steps[1].Id);
+            Assert.Equal("Result", plan.Steps[1].ReturnIdReference);
+        }
+    }
+}

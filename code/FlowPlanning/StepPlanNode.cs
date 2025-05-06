@@ -62,19 +62,35 @@ namespace FlowPlanning
 
                 if (statement.InnerStatement.Query != null)
                 {
-                    if (statement.Prefix.LetIdPrefix != null
-                        || statement.Prefix.ReturnPrefix)
+                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
                     {   //  We don't plan for queries that aren't referenced
                         newNode = NewQuery(accessibleNodes, statement);
                     }
                 }
                 else if (statement.InnerStatement.Union != null)
                 {
-                    newNode = NewUnion(accessibleNodes, statement);
+                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
+                    {   //  We don't plan unions that aren't referenced
+                        newNode = NewUnion(accessibleNodes, statement);
+                    }
+                }
+                else if (statement.InnerStatement.ShowCommand != null)
+                {
+                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
+                    {   //  We don't plan show commands that aren't referenced
+                        newNode = NewShowCommand(accessibleNodes, statement);
+                    }
+                }
+                else if (statement.InnerStatement.Command != null)
+                {
+                    newNode = NewCommand(accessibleNodes, statement);
                 }
                 else if (statement.InnerStatement.ReferencedIdentifier != null)
                 {
-                    newNode = NewReferencedIdentifier(accessibleNodes, statement);
+                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
+                    {   //  We don't plan reference that aren't referenced themselves
+                        newNode = NewReferencedIdentifier(accessibleNodes, statement);
+                    }
                 }
                 else
                 {
@@ -94,12 +110,14 @@ namespace FlowPlanning
             //  Implement return step
             var lastStatement = statements.LastOrDefault();
 
-            if (lastStatement != null && lastStatement.Prefix.ReturnPrefix)
+            if (isRootScope && lastStatement != null && lastStatement.Prefix.ReturnPrefix)
             {
                 var lastPlan = builder.Last().StepPlan;
                 var returnStepPlanNode = new StepPlanNode(
                     new StepPlan(
                         lastPlan.Id,
+                        null,
+                        null,
                         null,
                         null,
                         null,
@@ -190,6 +208,37 @@ namespace FlowPlanning
             }
         }
 
+        private static StepPlanNode? NewShowCommand(
+            IImmutableDictionary<string, StepPlanNode> accessibleNodes,
+            StatementScript statement)
+        {
+            var showCommandPlan = new ShowCommandPlan(statement.InnerStatement.ShowCommand!);
+            var stepPlan = new StepPlan(
+                statement.Prefix.LetIdPrefix!,
+                null,
+                null,
+                showCommandPlan);
+            var stepPlanNode = new StepPlanNode(stepPlan);
+
+            return stepPlanNode;
+        }
+
+        private static StepPlanNode? NewCommand(
+            IImmutableDictionary<string, StepPlanNode> accessibleNodes,
+            StatementScript statement)
+        {
+            CommandPlan commandPlan = new CommandPlan(statement.InnerStatement.Command!);
+            var stepPlan = new StepPlan(
+                statement.Prefix.LetIdPrefix!,
+                null,
+                null,
+                null,
+                commandPlan);
+            var stepPlanNode = new StepPlanNode(stepPlan);
+
+            return stepPlanNode;
+        }
+
         private static StepPlanNode NewReferencedIdentifier(
             IImmutableDictionary<string, StepPlanNode> accessibleNodes,
             StatementScript statement)
@@ -205,6 +254,8 @@ namespace FlowPlanning
             {
                 var stepPlan = new StepPlan(
                     statement.Prefix.LetIdPrefix ?? "$return",
+                    null,
+                    null,
                     null,
                     null,
                     referencedId);

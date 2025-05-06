@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Parsing\SimpleQuery.kql" />
+    <EmbeddedResource Include="Planning\ShowCommandPlanning\ShowCommand.kql" />
     <EmbeddedResource Include="Planning\UnionQueryPlanning\MaterializeGenUnionQuery.kql" />
     <EmbeddedResource Include="Planning\UnionQueryPlanning\GenUnionQuery.kql" />
     <EmbeddedResource Include="Planning\UnionQueryPlanning\AdHocUnionQuery.kql" />

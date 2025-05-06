@@ -1,0 +1,11 @@
+﻿let Result = show command:
+    """
+        .show table Telemetry extents
+    """;
+
+show command:
+    """
+        .show table Telemetry extents
+    """;
+
+return Result;
