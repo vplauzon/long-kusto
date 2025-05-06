@@ -2,7 +2,8 @@
 {
     internal record StepPlan(
         string Id,
-        QueryPlan? QueryPlan,
-        UnionPlan? UnionPlan,
-        string? IdReference);
+        QueryPlan? QueryPlan = null,
+        UnionPlan? UnionPlan = null,
+        string? IdReference = null,
+        string? ReturnIdReference = null);
 }

@@ -16,7 +16,7 @@ namespace UnitTest.Planning.SimpleQueryPlanning
             Assert.Equal("MyQuery", plan.Steps[0].Id);
             Assert.NotNull(plan.Steps[0].QueryPlan);
             Assert.Equal("$return", plan.Steps[1].Id);
-            Assert.Equal("MyQuery", plan.Steps[1].IdReference);
+            Assert.Equal("MyQuery", plan.Steps[1].ReturnIdReference);
         }
 
         [Fact]

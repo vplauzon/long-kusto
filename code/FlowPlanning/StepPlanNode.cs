@@ -44,11 +44,13 @@ namespace FlowPlanning
         public static IImmutableList<StepPlanNode> BuildFirstDraft(StatementScript[] statements)
         {
             return BuildFirstDraft(
+                true,
                 statements,
                 ImmutableDictionary<string, StepPlanNode>.Empty);
         }
 
         private static IImmutableList<StepPlanNode> BuildFirstDraft(
+            bool isRootScope,
             StatementScript[] statements,
             IImmutableDictionary<string, StepPlanNode> accessibleNodes)
         {
@@ -88,6 +90,23 @@ namespace FlowPlanning
                     }
                     builder.Add(newNode);
                 }
+            }
+            //  Implement return step
+            var lastStatement = statements.LastOrDefault();
+
+            if (lastStatement != null && lastStatement.Prefix.ReturnPrefix)
+            {
+                var lastPlan = builder.Last().StepPlan;
+                var returnStepPlanNode = new StepPlanNode(
+                    new StepPlan(
+                        lastPlan.Id,
+                        null,
+                        null,
+                        null,
+                        lastPlan.IdReference));
+
+                builder.RemoveAt(builder.Count() - 1);
+                builder.Add(returnStepPlanNode);
             }
 
             return builder.ToImmutableArray();
