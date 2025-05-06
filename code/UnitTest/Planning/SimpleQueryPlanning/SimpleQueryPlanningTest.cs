@@ -28,7 +28,7 @@ namespace UnitTest.Planning.SimpleQueryPlanning
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.NotNull(plan.Steps[0].QueryPlan);
-            Assert.NotNull(plan.Steps[1].IdReference);
+            Assert.NotNull(plan.Steps[1].ReturnIdReference);
         }
 
         [Fact]
