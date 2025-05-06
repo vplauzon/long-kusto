@@ -48,6 +48,10 @@ rule query = "query" u:usingResultSets? ":" q:trippleDoubleQuotedString ";"
 rule command = "command" ":" q:trippleDoubleQuotedString ";"
 	=> { "text" : q };
 
+#	Show command
+rule showCommand = "show" "command" ":" q:trippleDoubleQuotedString ";"
+	=> { "text" : q };
+
 #	Append
 rule append = "append" "in" table:identifier ":" statement:statement
 	=> { "table" : table, "statement" : statement};
@@ -82,8 +86,8 @@ rule forEach = "foreach" iterator:identifier type:toType? "in" resultSet:identif
 rule identifierStatement = identifier:identifier ";" => identifier;
 
 #	Statements
-rule innerStatement = query:query | command:command | forEach:forEach | union:union
-	| await:await | append:append | referencedIdentifier:identifierStatement;
+rule innerStatement = query:query | showCommand:showCommand | command:command | forEach:forEach
+	| union:union | await:await | append:append | referencedIdentifier:identifierStatement;
 rule returnPrefix = ("return" => true) | ("" => false);
 rule letIdPrefix = ("let" id:identifier "=" => id)? => firstOrNull(defaultOutput);
 rule prefix = returnPrefix:returnPrefix | letIdPrefix:letIdPrefix;

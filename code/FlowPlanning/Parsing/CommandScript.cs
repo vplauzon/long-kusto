@@ -1,4 +1,4 @@
 ﻿namespace FlowPlanning.Parsing
 {
-    internal record CommandScript();
+    internal record CommandScript(string Text);
 }

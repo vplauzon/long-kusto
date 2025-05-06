@@ -2,6 +2,7 @@
 {
     internal record InnerStatementScript(
         QueryScript? Query,
+        ShowCommandScript? ShowCommand,
         CommandScript? Command,
         ForEachScript? ForEach,
         UnionScript? Union,
