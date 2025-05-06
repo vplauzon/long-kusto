@@ -107,12 +107,24 @@ namespace FlowPlanning
                     builder.Add(newNode);
                 }
             }
+            if (isRootScope)
+            {
+                AddReturnStepPlan(statements, builder);
+            }
+
+            return builder.ToImmutableArray();
+        }
+
+        private static void AddReturnStepPlan(
+            StatementScript[] statements,
+            IList<StepPlanNode> nodes)
+        {
             //  Implement return step
             var lastStatement = statements.LastOrDefault();
 
-            if (isRootScope && lastStatement != null && lastStatement.Prefix.ReturnPrefix)
+            if (lastStatement != null && lastStatement.Prefix.ReturnPrefix)
             {
-                var lastPlan = builder.Last().StepPlan;
+                var lastPlan = nodes.Last().StepPlan;
                 var returnStepPlanNode = new StepPlanNode(
                     new StepPlan(
                         lastPlan.Id,
@@ -123,11 +135,9 @@ namespace FlowPlanning
                         null,
                         lastPlan.IdReference));
 
-                builder.RemoveAt(builder.Count() - 1);
-                builder.Add(returnStepPlanNode);
+                nodes.RemoveAt(nodes.Count() - 1);
+                nodes.Add(returnStepPlanNode);
             }
-
-            return builder.ToImmutableArray();
         }
 
         private static StepPlanNode NewQuery(
