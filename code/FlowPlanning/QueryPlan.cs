@@ -2,5 +2,5 @@
 
 namespace FlowPlanning
 {
-    internal record QueryPlan(QueryScript QueryScript);
+    internal record QueryPlan(string Text, KustoType? Type, string[] Using);
 }

@@ -1,0 +1,7 @@
+﻿let Count = query to typeof(long):
+    """
+        T
+        | count
+    """;
+
+return Count;

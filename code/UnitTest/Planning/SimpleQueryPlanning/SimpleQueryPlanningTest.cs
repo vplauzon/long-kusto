@@ -40,5 +40,18 @@ namespace UnitTest.Planning.SimpleQueryPlanning
 
             Assert.Empty(plan.Steps);
         }
+
+        [Fact]
+        public void ScalarQuery()
+        {
+            var text = GetResource("Planning.SimpleQueryPlanning.ScalarQuery.kql");
+            var script = ScriptParser.ParseScript(text);
+            var plan = FlowPlan.CreatePlan(script);
+
+            Assert.Equal(2, plan.Steps.Count());
+            Assert.NotNull(plan.Steps[0].QueryPlan);
+            Assert.Equal(KustoType.Long, plan.Steps[0].QueryPlan!.Type);
+            Assert.NotNull(plan.Steps[1].ReturnIdReference);
+        }
     }
 }

@@ -174,7 +174,10 @@ namespace FlowPlanning
             IImmutableDictionary<string, StepPlanNode> accessibleNodes,
             StatementScript statement)
         {
-            var queryPlan = new QueryPlan(statement.InnerStatement.Query!);
+            var queryPlan = new QueryPlan(
+                statement.InnerStatement.Query!.Text,
+                GetKustoType(statement.InnerStatement.Query!.Type),
+                statement.InnerStatement.Query!.Using);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
                 queryPlan,
@@ -242,6 +245,8 @@ namespace FlowPlanning
                     return KustoType.Dynamic;
                 case "string":
                     return KustoType.String;
+                case "long":
+                    return KustoType.Long;
 
                 default:
                     throw new NotSupportedException($"Kusto type '{type}'");

@@ -23,6 +23,7 @@
     <EmbeddedResource Include="Planning\CleanUnreferencedReadonlySteps\Referrenced.kql" />
     <EmbeddedResource Include="Planning\CleanUnreferencedReadonlySteps\Unreferrenced.kql" />
     <EmbeddedResource Include="Planning\ShowCommandPlanning\ShowCommand.kql" />
+    <EmbeddedResource Include="Planning\SimpleQueryPlanning\ScalarQuery.kql" />
     <EmbeddedResource Include="Planning\UnionQueryPlanning\MaterializeGenUnionQuery.kql" />
     <EmbeddedResource Include="Planning\UnionQueryPlanning\GenUnionQuery.kql" />
     <EmbeddedResource Include="Planning\UnionQueryPlanning\AdHocUnionQuery.kql" />

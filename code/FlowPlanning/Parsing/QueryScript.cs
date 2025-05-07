@@ -1,4 +1,4 @@
 ﻿namespace FlowPlanning.Parsing
 {
-    internal record QueryScript(string Text, string[] Using);
+    internal record QueryScript(string Text, string? Type, string[] Using);
 }

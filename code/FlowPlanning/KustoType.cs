@@ -3,6 +3,7 @@
     internal enum KustoType
     {
         Dynamic,
-        String
+        String,
+        Long
     }
 }
