@@ -71,7 +71,7 @@ namespace FlowPlanning
             DependsOn = DependsOn.AddRange(dependantNodes);
             foreach (var dependantNode in dependantNodes)
             {
-                dependantNode.DependedBy = DependedBy.Add(dependantNode);
+                dependantNode.DependedBy = DependedBy.Add(this);
             }
         }
 
@@ -358,6 +358,13 @@ namespace FlowPlanning
             {
                 nodeToRemove.Remove();
             }
+        }
+        #endregion
+
+        #region Object methods
+        public override string ToString()
+        {
+            return StepPlan.ToString();
         }
         #endregion
     }
