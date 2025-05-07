@@ -7,5 +7,6 @@ namespace FlowPlanning
         string Iterator,
         string ResultSet,
         KustoType Type,
-        long? Concurrency);
+        long? Concurrency,
+        StepPlan[] ChildrenPlans);
 }

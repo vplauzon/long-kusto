@@ -217,12 +217,23 @@ namespace FlowPlanning
             }
             else
             {
+                var childrenNodes = BuildFirstDraft(
+                    statement.InnerStatement.Union!.Statements,
+                    //  Add iterator as an accessible dummy node
+                    accessibleNodes.Add(
+                        statement.InnerStatement.Union!.Iterator,
+                        new StepPlanNode(new StepPlan(
+                            statement.InnerStatement.Union!.Iterator))));
+                var childrenPlans = childrenNodes
+                    .Select(n => n.StepPlan)
+                    .ToArray();
                 var unionPlan = new UnionPlan(
                     false,
                     statement.InnerStatement.Union!.Iterator,
                     resultSet,
                     GetKustoType(statement.InnerStatement.Union!.Type),
-                    concurrency);
+                    concurrency,
+                    childrenPlans);
                 var stepPlan = new StepPlan(
                     statement.Prefix.LetIdPrefix!,
                     null,
@@ -231,6 +242,7 @@ namespace FlowPlanning
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
                 stepPlanNode.AddDependencies(referencedNode);
+                stepPlanNode.AddChildren(childrenNodes);
 
                 return stepPlanNode;
             }
