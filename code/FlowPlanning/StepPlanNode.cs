@@ -6,11 +6,14 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace FlowPlanning
 {
     internal class StepPlanNode
     {
+        private StepPlanNode? _parent = null;
+
         public StepPlanNode(StepPlan stepPlan)
         {
             StepPlan = stepPlan;
@@ -19,42 +22,110 @@ namespace FlowPlanning
             Children = ImmutableArray<StepPlanNode>.Empty;
         }
 
-        public StepPlan StepPlan { get; }
+        public StepPlan StepPlan { get; private set; }
 
-        public IImmutableList<StepPlanNode> DependsOn { get; set; }
+        public IImmutableList<StepPlanNode> DependsOn { get; private set; }
 
-        public IImmutableList<StepPlanNode> DependedBy { get; set; }
+        public IImmutableList<StepPlanNode> DependedBy { get; private set; }
 
-        public IImmutableList<StepPlanNode> Children { get; set; }
+        public IImmutableList<StepPlanNode> Children { get; private set; }
 
-        #region Update Nodes
-        public void AddDependency(StepPlanNode node)
+        public IEnumerable<StepPlanNode> AllRecursiveChildren => ListAllRecursiveChildren();
+
+        public IEnumerable<StepPlanNode> AllRecursiveDependedBy => ListAllRecursiveDependedBy();
+
+        #region Recursive gets
+        private IEnumerable<StepPlanNode> ListAllRecursiveChildren()
         {
-            DependsOn = DependsOn.Add(node);
-            node.DependedBy = DependedBy.Add(node);
+            foreach (var child in Children)
+            {
+                yield return child;
+                foreach (var subChild in child.ListAllRecursiveChildren())
+                {
+                    yield return subChild;
+                }
+            }
         }
 
-        public void AddChild(StepPlanNode node)
+        private IEnumerable<StepPlanNode> ListAllRecursiveDependedBy()
         {
-            Children.Add(node);
+            foreach (var node in DependedBy)
+            {
+                yield return node;
+                foreach (var subNode in node.ListAllRecursiveDependedBy())
+                {
+                    yield return subNode;
+                }
+            }
+        }
+        #endregion
+
+        #region Update Nodes
+        public void UpdatePlan(StepPlan stepPlan)
+        {
+            StepPlan = stepPlan;
+        }
+
+        public void AddDependencies(params IEnumerable<StepPlanNode> dependantNodes)
+        {
+            DependsOn = DependsOn.AddRange(dependantNodes);
+            foreach (var dependantNode in dependantNodes)
+            {
+                dependantNode.DependedBy = DependedBy.Add(dependantNode);
+            }
+        }
+
+        public void AddChildren(params IEnumerable<StepPlanNode> childrenNodes)
+        {
+            Children = Children.AddRange(childrenNodes);
+            foreach (var childNode in childrenNodes)
+            {
+                childNode._parent = this;
+            }
+        }
+        #endregion
+
+        #region Remove Node
+        public void Remove()
+        {
+            foreach (var node in DependedBy)
+            {
+                node.DependsOn = node.DependsOn.Remove(this);
+            }
+            foreach (var node in DependsOn)
+            {
+                node.DependedBy = node.DependedBy.Remove(this);
+            }
+            foreach (var child in Children.ToArray())
+            {
+                child.Remove();
+            }
+            if (_parent != null)
+            {
+                _parent.Children = _parent.Children.Remove(this);
+            }
         }
         #endregion
 
         #region First Draft
-        public static IImmutableList<StepPlanNode> BuildFirstDraft(StatementScript[] statements)
+        public static StepPlanNode BuildFirstDraft(StatementScript[] statements)
         {
-            return BuildFirstDraft(
-                true,
+            var draftFirstLevelNodes = BuildFirstDraft(
                 statements,
                 ImmutableDictionary<string, StepPlanNode>.Empty);
+            var draftRootNode = new StepPlanNode(new StepPlan("$root"));
+
+            draftRootNode.AddChildren(draftFirstLevelNodes);
+            AddReturnStepPlan(statements, draftRootNode);
+
+            return draftRootNode;
         }
 
-        private static IImmutableList<StepPlanNode> BuildFirstDraft(
-            bool isRootScope,
+        private static IEnumerable<StepPlanNode> BuildFirstDraft(
             StatementScript[] statements,
             IImmutableDictionary<string, StepPlanNode> accessibleNodes)
         {
-            var builder = ImmutableArray<StepPlanNode>.Empty.ToBuilder();
+            var nodes = new List<StepPlanNode>();
 
             foreach (var statement in statements)
             {
@@ -62,24 +133,15 @@ namespace FlowPlanning
 
                 if (statement.InnerStatement.Query != null)
                 {
-                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
-                    {   //  We don't plan for queries that aren't referenced
-                        newNode = NewQuery(accessibleNodes, statement);
-                    }
+                    newNode = NewQuery(accessibleNodes, statement);
                 }
                 else if (statement.InnerStatement.Union != null)
                 {
-                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
-                    {   //  We don't plan unions that aren't referenced
-                        newNode = NewUnion(accessibleNodes, statement);
-                    }
+                    newNode = NewUnion(accessibleNodes, statement);
                 }
                 else if (statement.InnerStatement.ShowCommand != null)
                 {
-                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
-                    {   //  We don't plan show commands that aren't referenced
-                        newNode = NewShowCommand(accessibleNodes, statement);
-                    }
+                    newNode = NewShowCommand(accessibleNodes, statement);
                 }
                 else if (statement.InnerStatement.Command != null)
                 {
@@ -87,10 +149,7 @@ namespace FlowPlanning
                 }
                 else if (statement.InnerStatement.ReferencedIdentifier != null)
                 {
-                    if (statement.Prefix.LetIdPrefix != null || statement.Prefix.ReturnPrefix)
-                    {   //  We don't plan reference that aren't referenced themselves
-                        newNode = NewReferencedIdentifier(accessibleNodes, statement);
-                    }
+                    newNode = NewReferencedIdentifier(accessibleNodes, statement);
                 }
                 else
                 {
@@ -104,40 +163,11 @@ namespace FlowPlanning
                             statement.Prefix.LetIdPrefix,
                             newNode!);
                     }
-                    builder.Add(newNode);
+                    nodes.Add(newNode);
                 }
             }
-            if (isRootScope)
-            {
-                AddReturnStepPlan(statements, builder);
-            }
 
-            return builder.ToImmutableArray();
-        }
-
-        private static void AddReturnStepPlan(
-            StatementScript[] statements,
-            IList<StepPlanNode> nodes)
-        {
-            //  Implement return step
-            var lastStatement = statements.LastOrDefault();
-
-            if (lastStatement != null && lastStatement.Prefix.ReturnPrefix)
-            {
-                var lastPlan = nodes.Last().StepPlan;
-                var returnStepPlanNode = new StepPlanNode(
-                    new StepPlan(
-                        lastPlan.Id,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        lastPlan.IdReference));
-
-                nodes.RemoveAt(nodes.Count() - 1);
-                nodes.Add(returnStepPlanNode);
-            }
+            return nodes;
         }
 
         private static StepPlanNode NewQuery(
@@ -161,7 +191,7 @@ namespace FlowPlanning
                 }
                 else
                 {
-                    stepPlanNode.AddDependency(referencedNode);
+                    stepPlanNode.AddDependencies(referencedNode);
                 }
             }
 
@@ -197,7 +227,7 @@ namespace FlowPlanning
                     null);
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
-                stepPlanNode.AddDependency(referencedNode);
+                stepPlanNode.AddDependencies(referencedNode);
 
                 return stepPlanNode;
             }
@@ -271,9 +301,62 @@ namespace FlowPlanning
                     referencedId);
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
-                stepPlanNode.AddDependency(referencedNode);
+                stepPlanNode.AddDependencies(referencedNode);
 
                 return stepPlanNode;
+            }
+        }
+
+        private static void AddReturnStepPlan(StatementScript[] statements, StepPlanNode rootNode)
+        {
+            //  Implement return step
+            var lastStatement = statements.LastOrDefault();
+
+            if (lastStatement != null && lastStatement.Prefix.ReturnPrefix)
+            {
+                var lastPlan = rootNode.Children.Last();
+
+                lastPlan.UpdatePlan(new StepPlan(
+                    lastPlan.StepPlan.Id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    lastPlan.StepPlan.IdReference));
+            }
+        }
+        #endregion
+
+        #region Clean unreferenced read only steps
+        /// <summary>
+        /// We keep only the nodes that is a return or from which the return depends
+        /// (directly or not) upon or non-readonly nodes depend on it.
+        /// </summary>
+        public void CleanUnreferencedReadonlySteps()
+        {   //  Initialize with the return and with all non-readonly steps
+            var nodesKept = new HashSet<StepPlanNode>(AllRecursiveChildren
+                .Where(n => n.StepPlan.ReturnIdReference != null
+                || !n.StepPlan.IsReadOnly));
+
+            foreach (var readOnlyNode in AllRecursiveChildren.Where(n => n.StepPlan.IsReadOnly))
+            {
+                var anyDependencyKept = readOnlyNode.AllRecursiveDependedBy
+                    .Where(nodesKept.Contains)
+                    .Any();
+
+                if (anyDependencyKept)
+                {
+                    nodesKept.Add(readOnlyNode);
+                }
+            }
+
+            var nodesToRemove = AllRecursiveChildren
+                .Where(n => !nodesKept.Contains(n));
+
+            foreach (var nodeToRemove in nodesToRemove)
+            {
+                nodeToRemove.Remove();
             }
         }
         #endregion

@@ -16,7 +16,10 @@ namespace FlowPlanning
             script = script.TransformToReferenceReturnOnly();
 
             var draft = StepPlanNode.BuildFirstDraft(script.Statements);
-            var steps = draft
+
+            draft.CleanUnreferencedReadonlySteps();
+
+            var steps = draft.Children
                 .Select(n => n.StepPlan)
                 .ToArray();
             var flowPlan = new FlowPlan(steps);

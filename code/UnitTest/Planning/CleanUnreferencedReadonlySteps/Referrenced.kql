@@ -1,0 +1,11 @@
+﻿let Result = query:
+    """
+        T
+    """;
+
+let Result2=Result;
+let Result3=Result2;
+let Result4=Result3;
+
+//  Since we do use the last one, nothing should be optimized away
+return Result4;
