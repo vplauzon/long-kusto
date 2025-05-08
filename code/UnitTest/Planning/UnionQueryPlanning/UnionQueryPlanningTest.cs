@@ -30,7 +30,6 @@ namespace UnitTest.Planning.UnionQueryPlanning
             Assert.Equal("Categories", plan.Steps[0].Id);
             Assert.Equal("UnionQuery", plan.Steps[1].Id);
             Assert.NotNull(plan.Steps[1].UnionPlan);
-            Assert.False(plan.Steps[1].UnionPlan!.IsLazyExecuted);
             Assert.Equal("$return", plan.Steps[3].Id);
         }
 
@@ -45,7 +44,6 @@ namespace UnitTest.Planning.UnionQueryPlanning
             Assert.Equal("Categories", plan.Steps[0].Id);
             Assert.Equal("UnionQuery", plan.Steps[1].Id);
             Assert.NotNull(plan.Steps[1].UnionPlan);
-            Assert.False(plan.Steps[1].UnionPlan!.IsLazyExecuted);
             Assert.NotNull(plan.Steps[2].ReturnIdReference);
             Assert.Equal("UnionQuery", plan.Steps[2].ReturnIdReference);
         }

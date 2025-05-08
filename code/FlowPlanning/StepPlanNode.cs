@@ -224,7 +224,6 @@ namespace FlowPlanning
                         new StepPlanNode(new StepPlan(
                             statement.InnerStatement.Union!.Iterator))));
                 var unionPlan = new UnionPlan(
-                    false,
                     statement.InnerStatement.Union!.Iterator,
                     resultSet,
                     GetKustoType(statement.InnerStatement.Union!.Type),
@@ -376,7 +375,6 @@ namespace FlowPlanning
                     StepPlan.Id,
                     null,
                     new UnionPlan(
-                        StepPlan.UnionPlan!.IsLazyExecuted,
                         StepPlan.UnionPlan!.Iterator,
                         StepPlan.UnionPlan!.ResultSet,
                         StepPlan.UnionPlan!.Type,
