@@ -1,4 +1,4 @@
-﻿namespace IntegratedTests
+﻿namespace IntegratedTest.Query
 {
     public class UnitTest1
     {
