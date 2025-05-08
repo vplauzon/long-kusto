@@ -177,11 +177,7 @@ namespace FlowPlanning
                 statement.InnerStatement.Query!.Text,
                 GetKustoType(statement.InnerStatement.Query!.Type),
                 statement.InnerStatement.Query!.Using);
-            var stepPlan = new StepPlan(
-                statement.Prefix.LetIdPrefix!,
-                queryPlan,
-                null,
-                null);
+            var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, QueryPlan: queryPlan);
             var stepPlanNode = new StepPlanNode(stepPlan);
 
             foreach (var referencedId in statement.InnerStatement.Query!.Using)
@@ -229,11 +225,7 @@ namespace FlowPlanning
                     GetKustoType(statement.InnerStatement.Union!.Type),
                     concurrency,
                     Array.Empty<StepPlan>());
-                var stepPlan = new StepPlan(
-                    statement.Prefix.LetIdPrefix!,
-                    null,
-                    unionPlan,
-                    null);
+                var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, UnionPlan: unionPlan);
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
                 stepPlanNode.AddDependencies(referencedNode);
@@ -267,9 +259,7 @@ namespace FlowPlanning
             var showCommandPlan = new ShowCommandPlan(statement.InnerStatement.ShowCommand!);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
-                null,
-                null,
-                showCommandPlan);
+                ShowCommandPlan: showCommandPlan);
             var stepPlanNode = new StepPlanNode(stepPlan);
 
             return stepPlanNode;
@@ -280,12 +270,7 @@ namespace FlowPlanning
             StatementScript statement)
         {
             CommandPlan commandPlan = new CommandPlan(statement.InnerStatement.Command!);
-            var stepPlan = new StepPlan(
-                statement.Prefix.LetIdPrefix!,
-                null,
-                null,
-                null,
-                commandPlan);
+            var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, CommandPlan: commandPlan);
             var stepPlanNode = new StepPlanNode(stepPlan);
 
             return stepPlanNode;
@@ -305,21 +290,8 @@ namespace FlowPlanning
             else
             {
                 var stepPlan = statement.Prefix.ReturnPrefix
-                    ? new StepPlan(
-                        "$return",
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        referencedId)
-                    : new StepPlan(
-                        statement.Prefix.LetIdPrefix!,
-                        null,
-                        null,
-                        null,
-                        null,
-                        referencedId);
+                    ? new StepPlan("$return", ReturnIdReference: referencedId)
+                    : new StepPlan(statement.Prefix.LetIdPrefix!, IdReference: referencedId);
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
                 stepPlanNode.AddDependencies(referencedNode);
