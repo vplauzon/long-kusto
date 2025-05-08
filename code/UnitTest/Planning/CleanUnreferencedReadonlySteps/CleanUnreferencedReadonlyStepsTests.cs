@@ -40,12 +40,13 @@ namespace UnitTest.Planning.CleanUnreferencedReadonlySteps
             var script = ScriptParser.ParseScript(text);
             var plan = FlowPlan.CreatePlan(script);
 
-            Assert.Equal(3, plan.Steps.Count());
+            Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Categories", plan.Steps[0].Id);
             Assert.NotNull(plan.Steps[0].QueryPlan);
             Assert.NotNull(plan.Steps[1].UnionPlan);
-            Assert.Equal("$return", plan.Steps[2].Id);
-            Assert.Equal("UnionQuery", plan.Steps[2].ReturnIdReference);
+            Assert.NotNull(plan.Steps[2].QueryPlan);
+            Assert.NotNull(plan.Steps[3].ReturnIdReference);
+            Assert.Equal(PersistanceMode.StoredQuery, plan.Steps[2].QueryPlan!.PersistanceMode);
         
             Assert.Equal(4, plan.Steps[1].UnionPlan!.ChildrenPlans.Count());
             Assert.Equal("CategoryPartition2", plan.Steps[1].UnionPlan!.ChildrenPlans[0].Id);

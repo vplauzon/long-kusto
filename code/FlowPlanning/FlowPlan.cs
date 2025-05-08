@@ -18,6 +18,7 @@ namespace FlowPlanning
             var draft = StepPlanNode.BuildFirstDraft(script.Statements);
 
             draft.CleanUnreferencedReadonlySteps();
+            draft.MakeReturnStoredQuery();
             draft.AssignChildrenPlans();
 
             var steps = draft.Children

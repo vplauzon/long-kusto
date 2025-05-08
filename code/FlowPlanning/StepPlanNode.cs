@@ -334,6 +334,85 @@ namespace FlowPlanning
         }
         #endregion
 
+        #region MakeReturnStoredQuery
+        public void MakeReturnStoredQuery()
+        {
+            var returnNode = Children.LastOrDefault();
+
+            if (returnNode != null && returnNode.StepPlan.ReturnIdReference != null)
+            {
+                var currentNode = returnNode;
+
+                while (true)
+                {
+                    if (currentNode.StepPlan.ReturnIdReference != null)
+                    {   //  Climb back the dependency graph
+                        currentNode = currentNode.DependsOn.First();
+                    }
+                    else if (currentNode.StepPlan.IdReference != null)
+                    {   //  Climb back the dependency graph
+                        currentNode = currentNode.DependsOn.First();
+                    }
+                    else if (currentNode.StepPlan.UnionPlan != null)
+                    {
+                        MaterializeUnion(returnNode, currentNode);
+
+                        return;
+                    }
+                    else if (currentNode.StepPlan.QueryPlan != null)
+                    {   //  Switch the persistency to stored query
+                        currentNode.UpdatePlan(new StepPlan(
+                            currentNode.StepPlan.Id,
+                            QueryPlan: currentNode.StepPlan.QueryPlan.ToStoredQuery()));
+
+                        return;
+                    }
+                    else if (currentNode.StepPlan.ShowCommandPlan != null)
+                    {   //  Switch the persistency to stored query
+                        currentNode.UpdatePlan(new StepPlan(
+                            currentNode.StepPlan.Id,
+                            ShowCommandPlan: currentNode.StepPlan.ShowCommandPlan.ToStoredQuery()));
+
+                        return;
+                    }
+                    else if (currentNode.StepPlan.CommandPlan != null)
+                    {   //  Switch the persistency to stored query
+                        currentNode.UpdatePlan(new StepPlan(
+                            currentNode.StepPlan.Id,
+                            CommandPlan: currentNode.StepPlan.CommandPlan.ToStoredQuery()));
+
+                        return;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException();
+                    }
+                }
+            }
+        }
+
+        private void MaterializeUnion(StepPlanNode returnNode, StepPlanNode currentNode)
+        {
+            var materializationPlanNode = new StepPlanNode(
+                new StepPlan(
+                    "$materialize",
+                    QueryPlan: new QueryPlan(
+                        currentNode.StepPlan.Id,
+                        null,
+                        [currentNode.StepPlan.Id],
+                        PersistanceMode.StoredQuery)));
+            var newReturnPlanNode = new StepPlanNode(
+                new StepPlan(
+                    "$return",
+                    ReturnIdReference: materializationPlanNode.StepPlan.Id));
+
+            materializationPlanNode.AddDependencies(currentNode);
+            newReturnPlanNode.AddDependencies(materializationPlanNode);
+            returnNode.Remove();
+            AddChildren(materializationPlanNode, returnNode);
+        }
+        #endregion
+
         #region AssignChildrenPlans
         public void AssignChildrenPlans()
         {

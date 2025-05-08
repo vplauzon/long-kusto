@@ -7,6 +7,5 @@ namespace FlowPlanning
         string ResultSet,
         KustoType Type,
         long? Concurrency,
-        StepPlan[] ChildrenPlans,
-        PersistanceMode PersistanceMode = PersistanceMode.Blob);
+        StepPlan[] ChildrenPlans);
 }
