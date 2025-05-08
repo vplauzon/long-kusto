@@ -21,7 +21,7 @@ jobs:
       run: dotnet restore code
     # See https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build
     - name: Build
-      run: dotnet build code/IntegratedTests --configuration Release --no-restore
+      run: dotnet build code/IntegratedTest --configuration Release --no-restore
     # See https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-test
     - name: Test
-      run: dotnet test code/IntegratedTests --configuration Release --no-build --verbosity normal
+      run: dotnet test code/IntegratedTest --configuration Release --no-build --verbosity normal
