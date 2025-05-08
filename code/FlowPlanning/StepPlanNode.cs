@@ -116,7 +116,6 @@ namespace FlowPlanning
             var draftRootNode = new StepPlanNode(new StepPlan("$root"));
 
             draftRootNode.AddChildren(draftFirstLevelNodes);
-            AddReturnStepPlan(statements, draftRootNode);
 
             return draftRootNode;
         }
@@ -224,16 +223,13 @@ namespace FlowPlanning
                         statement.InnerStatement.Union!.Iterator,
                         new StepPlanNode(new StepPlan(
                             statement.InnerStatement.Union!.Iterator))));
-                var childrenPlans = childrenNodes
-                    .Select(n => n.StepPlan)
-                    .ToArray();
                 var unionPlan = new UnionPlan(
                     false,
                     statement.InnerStatement.Union!.Iterator,
                     resultSet,
                     GetKustoType(statement.InnerStatement.Union!.Type),
                     concurrency,
-                    childrenPlans);
+                    Array.Empty<StepPlan>());
                 var stepPlan = new StepPlan(
                     statement.Prefix.LetIdPrefix!,
                     null,
@@ -309,38 +305,27 @@ namespace FlowPlanning
             }
             else
             {
-                var stepPlan = new StepPlan(
-                    statement.Prefix.LetIdPrefix ?? "$return",
-                    null,
-                    null,
-                    null,
-                    null,
-                    referencedId);
+                var stepPlan = statement.Prefix.ReturnPrefix
+                    ? new StepPlan(
+                        "$return",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        referencedId)
+                    : new StepPlan(
+                        statement.Prefix.LetIdPrefix!,
+                        null,
+                        null,
+                        null,
+                        null,
+                        referencedId);
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
                 stepPlanNode.AddDependencies(referencedNode);
 
                 return stepPlanNode;
-            }
-        }
-
-        private static void AddReturnStepPlan(StatementScript[] statements, StepPlanNode rootNode)
-        {
-            //  Implement return step
-            var lastStatement = statements.LastOrDefault();
-
-            if (lastStatement != null && lastStatement.Prefix.ReturnPrefix)
-            {
-                var lastPlan = rootNode.Children.Last();
-
-                lastPlan.UpdatePlan(new StepPlan(
-                    lastPlan.StepPlan.Id,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    lastPlan.StepPlan.IdReference));
             }
         }
         #endregion
@@ -374,6 +359,33 @@ namespace FlowPlanning
             foreach (var nodeToRemove in nodesToRemove)
             {
                 nodeToRemove.Remove();
+            }
+        }
+        #endregion
+
+        #region AssignChildrenPlans
+        public void AssignChildrenPlans()
+        {
+            var childrenPlans = Children
+                .Select(n => n.StepPlan)
+                .ToArray();
+
+            if (StepPlan.UnionPlan != null)
+            {
+                UpdatePlan(new StepPlan(
+                    StepPlan.Id,
+                    null,
+                    new UnionPlan(
+                        StepPlan.UnionPlan!.IsLazyExecuted,
+                        StepPlan.UnionPlan!.Iterator,
+                        StepPlan.UnionPlan!.ResultSet,
+                        StepPlan.UnionPlan!.Type,
+                        StepPlan.UnionPlan!.Concurrency,
+                        childrenPlans)));
+            }
+            foreach (var childNode in Children)
+            {
+                childNode.AssignChildrenPlans();
             }
         }
         #endregion

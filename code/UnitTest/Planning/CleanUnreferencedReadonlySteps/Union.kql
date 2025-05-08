@@ -1,0 +1,22 @@
+﻿let Categories = query:
+    """
+    T
+    | distinct Category
+    """;
+
+let UnionQuery = union CategoryPartition to typeof(string) in Categories with (concurrency=5)
+    {   //  Those first two should stay there
+        let CategoryPartition2=CategoryPartition;
+        let CategoryPartition3=CategoryPartition2;
+        //  This last one should go
+        let CategoryPartition4=CategoryPartition3;
+        return query using (CategoryPartition3):
+            """
+                T
+                | where Category==CategoryPartition
+                | summarize Cardinality=count() by Category, SubCategory
+                | top 50 by Cardinality
+            """;
+    }
+
+return UnionQuery;

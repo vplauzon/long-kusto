@@ -1,12 +1,12 @@
 ﻿namespace FlowPlanning.Parsing
 {
     internal record InnerStatementScript(
-        QueryScript? Query,
-        ShowCommandScript? ShowCommand,
-        CommandScript? Command,
-        ForEachScript? ForEach,
-        UnionScript? Union,
-        AwaitScript? Await,
-        AppendScript? Append,
-        string? ReferencedIdentifier);
+        QueryScript? Query = null,
+        ShowCommandScript? ShowCommand = null,
+        CommandScript? Command = null,
+        ForEachScript? ForEach = null,
+        UnionScript? Union = null,
+        AwaitScript? Await = null,
+        AppendScript? Append = null,
+        string? ReferencedIdentifier = null);
 }
