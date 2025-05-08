@@ -2,5 +2,7 @@
 
 namespace FlowPlanning
 {
-    internal record CommandPlan(CommandScript CommandScript);
+    internal record CommandPlan(
+        CommandScript CommandScript,
+        PersistanceMode PersistanceMode = PersistanceMode.Blob);
 }

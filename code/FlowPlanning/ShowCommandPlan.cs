@@ -2,5 +2,7 @@
 
 namespace FlowPlanning
 {
-    internal record ShowCommandPlan(ShowCommandScript ShowCommandScript);
+    internal record ShowCommandPlan(
+        ShowCommandScript ShowCommandScript,
+        PersistanceMode PersistanceMode = PersistanceMode.Blob);
 }
