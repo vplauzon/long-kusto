@@ -1,6 +1,6 @@
 ﻿namespace IntegratedTest.Query
 {
-    public class UnitTest1
+    public class QueryTest
     {
         [Fact]
         public void Test1()

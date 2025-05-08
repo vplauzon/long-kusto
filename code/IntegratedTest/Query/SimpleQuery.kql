@@ -1,0 +1,4 @@
+﻿return query:
+    """
+        print 42
+    """;
