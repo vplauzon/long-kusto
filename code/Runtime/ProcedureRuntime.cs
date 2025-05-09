@@ -9,9 +9,7 @@ namespace Runtime
 {
     public class ProcedureRuntime
     {
-        public async Task RunProcedure(
-            FlowPlan flowPlan,
-            CancellationToken ct)
+        public async Task RunProcedure(FlowPlan flowPlan, CancellationToken ct)
         {
             await Task.CompletedTask;
 
