@@ -11,4 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="..\FlowPlanning\FlowPlanning.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Kusto\" />
+    <Folder Include="Storage\" />
+  </ItemGroup>
 </Project>
