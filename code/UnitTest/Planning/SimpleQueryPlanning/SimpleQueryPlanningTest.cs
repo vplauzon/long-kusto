@@ -9,8 +9,7 @@ namespace UnitTest.Planning.SimpleQueryPlanning
         public void SimpleQuery()
         {
             var text = GetResource("Planning.SimpleQueryPlanning.SimpleQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.Equal("MyQuery", plan.Steps[0].Id);
@@ -23,8 +22,7 @@ namespace UnitTest.Planning.SimpleQueryPlanning
         public void DirectSimpleQuery()
         {
             var text = GetResource("Planning.SimpleQueryPlanning.DirectSimpleQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.NotNull(plan.Steps[0].QueryPlan);
@@ -35,8 +33,7 @@ namespace UnitTest.Planning.SimpleQueryPlanning
         public void UnnamedQuery()
         {
             var text = GetResource("Planning.SimpleQueryPlanning.UnnamedQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Empty(plan.Steps);
         }
@@ -45,8 +42,7 @@ namespace UnitTest.Planning.SimpleQueryPlanning
         public void ScalarQuery()
         {
             var text = GetResource("Planning.SimpleQueryPlanning.ScalarQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.NotNull(plan.Steps[0].QueryPlan);

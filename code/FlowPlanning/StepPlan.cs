@@ -1,7 +1,7 @@
 ﻿
 namespace FlowPlanning
 {
-    internal record StepPlan(
+    public record StepPlan(
         string Id,
         QueryPlan? QueryPlan = null,
         UnionPlan? UnionPlan = null,

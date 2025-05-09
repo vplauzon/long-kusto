@@ -256,7 +256,7 @@ namespace FlowPlanning
             IImmutableDictionary<string, StepPlanNode> accessibleNodes,
             StatementScript statement)
         {
-            var showCommandPlan = new ShowCommandPlan(statement.InnerStatement.ShowCommand!);
+            var showCommandPlan = new ShowCommandPlan(statement.InnerStatement.ShowCommand!.Text);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
                 ShowCommandPlan: showCommandPlan);
@@ -269,7 +269,7 @@ namespace FlowPlanning
             IImmutableDictionary<string, StepPlanNode> accessibleNodes,
             StatementScript statement)
         {
-            CommandPlan commandPlan = new CommandPlan(statement.InnerStatement.Command!);
+            CommandPlan commandPlan = new CommandPlan(statement.InnerStatement.Command!.Text);
             var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, CommandPlan: commandPlan);
             var stepPlanNode = new StepPlanNode(stepPlan);
 

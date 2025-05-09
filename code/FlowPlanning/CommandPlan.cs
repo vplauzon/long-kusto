@@ -4,13 +4,13 @@ using System.Net.NetworkInformation;
 
 namespace FlowPlanning
 {
-    internal record CommandPlan(
-        CommandScript CommandScript,
+    public record CommandPlan(
+        string Text,
         PersistanceMode PersistanceMode = PersistanceMode.Blob)
     {
         public CommandPlan ToStoredQuery()
         {
-            return new CommandPlan(CommandScript, PersistanceMode.StoredQuery);
+            return new CommandPlan(Text, PersistanceMode.StoredQuery);
         }
     }
 }

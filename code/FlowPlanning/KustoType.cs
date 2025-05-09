@@ -1,6 +1,6 @@
 ﻿namespace FlowPlanning
 {
-    internal enum KustoType
+    public enum KustoType
     {
         Dynamic,
         String,

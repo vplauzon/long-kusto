@@ -8,9 +8,14 @@ using System.Threading.Tasks;
 
 namespace FlowPlanning
 {
-    internal record FlowPlan(StepPlan[] Steps)
+    public record FlowPlan(StepPlan[] Steps)
     {
-        public static FlowPlan CreatePlan(Script script)
+        public static FlowPlan CreatePlan(string text)
+        {
+            return CreatePlan(ScriptParser.ParseScript(text));
+        }
+
+        internal static FlowPlan CreatePlan(Script script)
         {
             script.StaticAnalysis();
             script = script.TransformToReferenceReturnOnly();

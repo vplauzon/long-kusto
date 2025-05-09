@@ -2,7 +2,7 @@
 
 namespace FlowPlanning
 {
-    internal record UnionPlan(
+    public record UnionPlan(
         string Iterator,
         string ResultSet,
         KustoType Type,

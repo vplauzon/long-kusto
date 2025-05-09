@@ -2,13 +2,13 @@
 
 namespace FlowPlanning
 {
-    internal record ShowCommandPlan(
-        ShowCommandScript ShowCommandScript,
+    public record ShowCommandPlan(
+        string Text,
         PersistanceMode PersistanceMode = PersistanceMode.Blob)
     {
         public ShowCommandPlan ToStoredQuery()
         {
-            return new ShowCommandPlan(ShowCommandScript, PersistanceMode.StoredQuery);
+            return new ShowCommandPlan(Text, PersistanceMode.StoredQuery);
         }
     }
 }

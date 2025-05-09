@@ -9,8 +9,7 @@ namespace UnitTest.Planning.ShowCommandPlanning
         public void ShowCommand()
         {
             var text = GetResource("Planning.ShowCommandPlanning.ShowCommand.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.Equal("Result", plan.Steps[0].Id);

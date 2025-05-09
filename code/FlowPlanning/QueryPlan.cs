@@ -2,7 +2,7 @@
 
 namespace FlowPlanning
 {
-    internal record QueryPlan(
+    public record QueryPlan(
         string Text,
         KustoType? Type,
         string[] Using,

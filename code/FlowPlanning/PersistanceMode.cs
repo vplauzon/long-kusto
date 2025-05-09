@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlowPlanning
 {
-    internal enum PersistanceMode
+    public enum PersistanceMode
     {
         Blob,
         StoredQuery

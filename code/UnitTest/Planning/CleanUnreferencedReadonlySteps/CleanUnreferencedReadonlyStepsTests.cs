@@ -9,8 +9,7 @@ namespace UnitTest.Planning.CleanUnreferencedReadonlySteps
         public void UnreferrencedMain()
         {
             var text = GetResource("Planning.CleanUnreferencedReadonlySteps.UnreferrencedMain.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.Equal("Result", plan.Steps[0].Id);
@@ -23,8 +22,7 @@ namespace UnitTest.Planning.CleanUnreferencedReadonlySteps
         public void ReferrencedMain()
         {
             var text = GetResource("Planning.CleanUnreferencedReadonlySteps.ReferrencedMain.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(5, plan.Steps.Count());
             Assert.Equal("Result", plan.Steps[0].Id);
@@ -37,8 +35,7 @@ namespace UnitTest.Planning.CleanUnreferencedReadonlySteps
         public void Union()
         {
             var text = GetResource("Planning.CleanUnreferencedReadonlySteps.Union.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Categories", plan.Steps[0].Id);

@@ -9,8 +9,7 @@ namespace UnitTest.Planning.UnionQueryPlanning
         public void AdHocUnionQuery()
         {
             var text = GetResource("Planning.UnionQueryPlanning.AdHocUnionQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Query1", plan.Steps[0].Id);
@@ -23,8 +22,7 @@ namespace UnitTest.Planning.UnionQueryPlanning
         public void GenUnionQuery()
         {
             var text = GetResource("Planning.UnionQueryPlanning.GenUnionQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Categories", plan.Steps[0].Id);
@@ -37,8 +35,7 @@ namespace UnitTest.Planning.UnionQueryPlanning
         public void MaterializeGenUnionQuery()
         {
             var text = GetResource("Planning.UnionQueryPlanning.MaterializeGenUnionQuery.kql");
-            var script = ScriptParser.ParseScript(text);
-            var plan = FlowPlan.CreatePlan(script);
+            var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Categories", plan.Steps[0].Id);
