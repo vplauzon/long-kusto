@@ -8,9 +8,4 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FlowPlanning\FlowPlanning.csproj" />
-    <ProjectReference Include="..\Kusto\Kusto.csproj" />
-    <ProjectReference Include="..\Storage\Storage.csproj" />
-  </ItemGroup>
 </Project>

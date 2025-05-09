@@ -1,5 +1,4 @@
-﻿using FlowPlanning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Runtime
 {
-    public class ProcedureRuntime
+    internal class RuntimeGateway
     {
-        public async Task RunProcedureAsync(FlowPlan flowPlan, CancellationToken ct)
+        public void RunProcedure(string text, Uri databaseUri)
         {
-            await Task.CompletedTask;
-
             throw new NotImplementedException();
         }
     }

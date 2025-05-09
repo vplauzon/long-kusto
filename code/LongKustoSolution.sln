@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegratedTest", "Integrate
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime", "Runtime\Runtime.csproj", "{A3A3BBD3-04AB-4315-B3C9-D9522FC9AF1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kusto", "Kusto\Kusto.csproj", "{8B2648C3-AC9B-42E9-A212-FB7282DE24FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Storage", "Storage\Storage.csproj", "{374AEBBC-6A0C-4309-B1AA-BDB0A06A8C4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{A3A3BBD3-04AB-4315-B3C9-D9522FC9AF1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3A3BBD3-04AB-4315-B3C9-D9522FC9AF1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3A3BBD3-04AB-4315-B3C9-D9522FC9AF1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B2648C3-AC9B-42E9-A212-FB7282DE24FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B2648C3-AC9B-42E9-A212-FB7282DE24FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B2648C3-AC9B-42E9-A212-FB7282DE24FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B2648C3-AC9B-42E9-A212-FB7282DE24FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{374AEBBC-6A0C-4309-B1AA-BDB0A06A8C4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{374AEBBC-6A0C-4309-B1AA-BDB0A06A8C4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{374AEBBC-6A0C-4309-B1AA-BDB0A06A8C4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{374AEBBC-6A0C-4309-B1AA-BDB0A06A8C4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
