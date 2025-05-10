@@ -8,4 +8,8 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Files.DataLake" Version="12.21.0" />
+  </ItemGroup>
+
 </Project>
