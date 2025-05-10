@@ -1,4 +1,5 @@
 ﻿using FlowPlanning;
+using Kusto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,13 @@ namespace Runtime
 {
     public class ProcedureRuntime
     {
-        public async Task RunProcedureAsync(FlowPlan flowPlan, CancellationToken ct)
+        public ProcedureRuntime(
+            DbClientCache dbClientCache,
+            FlowPlan flowPlan)
+        {
+        }
+
+        public async Task RunProcedureAsync(CancellationToken ct)
         {
             await Task.CompletedTask;
 

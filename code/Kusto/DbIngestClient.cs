@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 
 namespace Kusto
 {
-    internal class DbIngestClient
+    public class DbIngestClient
     {
         private static readonly IImmutableList<Status> FAILED_STATUS = [
             Status.Skipped,

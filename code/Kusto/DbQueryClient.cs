@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Kusto
 {
-    internal class DbQueryClient
+    public class DbQueryClient
     {
         private static readonly ClientRequestProperties EMPTY_PROPERTIES =
             new ClientRequestProperties();

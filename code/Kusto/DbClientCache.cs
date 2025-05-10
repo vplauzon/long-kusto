@@ -7,7 +7,7 @@ using System.Data;
 
 namespace Kusto
 {
-    internal class DbClientCache : IDisposable
+    public class DbClientCache : IDisposable
     {
         #region Inner Types
         private enum QueueType

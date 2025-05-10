@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Kusto
 {
-    internal class DbCommandClient
+    public class DbCommandClient
     {
         private readonly ICslAdminProvider _provider;
         private readonly ExecutionQueue _commandQueue;
