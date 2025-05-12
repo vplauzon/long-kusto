@@ -1,0 +1,4 @@
+﻿command:
+    """
+        .create table(Id:string)
+    """;
