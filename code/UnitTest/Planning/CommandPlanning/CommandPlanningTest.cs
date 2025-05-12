@@ -12,7 +12,7 @@ namespace UnitTest.Planning.CommandPlanning
 
             Assert.Single(plan.Steps);
             Assert.Null(plan.Steps[0].Id);
-            Assert.NotNull(plan.Steps[0].CommandPlan);
+            Assert.NotNull(plan.Steps[0].ActionPlan.CommandPlan);
         }
     }
 }

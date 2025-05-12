@@ -26,7 +26,7 @@ namespace UnitTest.Planning.UnionQueryPlanning
             Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Categories", plan.Steps[0].Id);
             Assert.Equal("UnionQuery", plan.Steps[1].Id);
-            Assert.NotNull(plan.Steps[1].UnionPlan);
+            Assert.NotNull(plan.Steps[1].ActionPlan.UnionPlan);
             Assert.Equal("$return", plan.Steps[3].Id);
         }
 
@@ -39,10 +39,12 @@ namespace UnitTest.Planning.UnionQueryPlanning
             Assert.Equal(4, plan.Steps.Count());
             Assert.Equal("Categories", plan.Steps[0].Id);
             Assert.Equal("UnionQuery", plan.Steps[1].Id);
-            Assert.NotNull(plan.Steps[1].UnionPlan);
-            Assert.NotNull(plan.Steps[2].QueryPlan);
-            Assert.Equal(PersistanceMode.StoredQuery, plan.Steps[2].QueryPlan!.PersistanceMode);
-            Assert.NotNull(plan.Steps[3].ReturnIdReference);
+            Assert.NotNull(plan.Steps[1].ActionPlan.UnionPlan);
+            Assert.NotNull(plan.Steps[2].ActionPlan.QueryPlan);
+            Assert.Equal(
+                PersistanceMode.StoredQuery,
+                plan.Steps[2].ActionPlan.QueryPlan!.PersistanceMode);
+            Assert.NotNull(plan.Steps[3].ActionPlan.ReturnIdReference);
         }
     }
 }

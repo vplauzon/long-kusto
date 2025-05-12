@@ -12,9 +12,9 @@ namespace UnitTest.Planning.ShowCommandPlanning
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.Equal("Result", plan.Steps[0].Id);
-            Assert.NotNull(plan.Steps[0].ShowCommandPlan);
+            Assert.NotNull(plan.Steps[0].ActionPlan.ShowCommandPlan);
             Assert.Equal("$return", plan.Steps[1].Id);
-            Assert.Equal("Result", plan.Steps[1].ReturnIdReference);
+            Assert.Equal("Result", plan.Steps[1].ActionPlan.ReturnIdReference);
         }
     }
 }

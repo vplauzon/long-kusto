@@ -12,9 +12,9 @@ namespace UnitTest.Planning.SimpleQueryPlanning
 
             Assert.Equal(2, plan.Steps.Count());
             Assert.Equal("MyQuery", plan.Steps[0].Id);
-            Assert.NotNull(plan.Steps[0].QueryPlan);
+            Assert.NotNull(plan.Steps[0].ActionPlan.QueryPlan);
             Assert.Equal("$return", plan.Steps[1].Id);
-            Assert.Equal("MyQuery", plan.Steps[1].ReturnIdReference);
+            Assert.Equal("MyQuery", plan.Steps[1].ActionPlan.ReturnIdReference);
         }
 
         [Fact]
@@ -24,8 +24,8 @@ namespace UnitTest.Planning.SimpleQueryPlanning
             var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
-            Assert.NotNull(plan.Steps[0].QueryPlan);
-            Assert.NotNull(plan.Steps[1].ReturnIdReference);
+            Assert.NotNull(plan.Steps[0].ActionPlan.QueryPlan);
+            Assert.NotNull(plan.Steps[1].ActionPlan.ReturnIdReference);
         }
 
         [Fact]
@@ -44,9 +44,9 @@ namespace UnitTest.Planning.SimpleQueryPlanning
             var plan = FlowPlan.CreatePlan(text);
 
             Assert.Equal(2, plan.Steps.Count());
-            Assert.NotNull(plan.Steps[0].QueryPlan);
-            Assert.Equal(KustoType.Long, plan.Steps[0].QueryPlan!.Type);
-            Assert.NotNull(plan.Steps[1].ReturnIdReference);
+            Assert.NotNull(plan.Steps[0].ActionPlan.QueryPlan);
+            Assert.Equal(KustoType.Long, plan.Steps[0].ActionPlan.QueryPlan!.Type);
+            Assert.NotNull(plan.Steps[1].ActionPlan.ReturnIdReference);
         }
     }
 }

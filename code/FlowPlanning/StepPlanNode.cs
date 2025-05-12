@@ -113,7 +113,7 @@ namespace FlowPlanning
             var draftFirstLevelNodes = BuildFirstDraft(
                 statements,
                 ImmutableDictionary<string, StepPlanNode>.Empty);
-            var draftRootNode = new StepPlanNode(new StepPlan("$root"));
+            var draftRootNode = new StepPlanNode(new StepPlan("$root", new ActionPlan()));
 
             draftRootNode.AddChildren(draftFirstLevelNodes);
 
@@ -177,7 +177,9 @@ namespace FlowPlanning
                 statement.InnerStatement.Query!.Text,
                 GetKustoType(statement.InnerStatement.Query!.Type),
                 statement.InnerStatement.Query!.Using);
-            var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, QueryPlan: queryPlan);
+            var stepPlan = new StepPlan(
+                statement.Prefix.LetIdPrefix!,
+                new ActionPlan(QueryPlan: queryPlan));
             var stepPlanNode = new StepPlanNode(stepPlan);
 
             foreach (var referencedId in statement.InnerStatement.Query!.Using)
@@ -218,14 +220,17 @@ namespace FlowPlanning
                     accessibleNodes.Add(
                         statement.InnerStatement.Union!.Iterator,
                         new StepPlanNode(new StepPlan(
-                            statement.InnerStatement.Union!.Iterator))));
+                            statement.InnerStatement.Union!.Iterator,
+                            new ActionPlan()))));
                 var unionPlan = new UnionPlan(
                     statement.InnerStatement.Union!.Iterator,
                     resultSet,
                     GetKustoType(statement.InnerStatement.Union!.Type),
                     concurrency,
                     Array.Empty<StepPlan>());
-                var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, UnionPlan: unionPlan);
+                var stepPlan = new StepPlan(
+                    statement.Prefix.LetIdPrefix!,
+                    new ActionPlan(UnionPlan: unionPlan));
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
                 stepPlanNode.AddDependencies(referencedNode);
@@ -259,7 +264,7 @@ namespace FlowPlanning
             var showCommandPlan = new ShowCommandPlan(statement.InnerStatement.ShowCommand!.Text);
             var stepPlan = new StepPlan(
                 statement.Prefix.LetIdPrefix!,
-                ShowCommandPlan: showCommandPlan);
+                new ActionPlan(ShowCommandPlan: showCommandPlan));
             var stepPlanNode = new StepPlanNode(stepPlan);
 
             return stepPlanNode;
@@ -270,7 +275,9 @@ namespace FlowPlanning
             StatementScript statement)
         {
             CommandPlan commandPlan = new CommandPlan(statement.InnerStatement.Command!.Text);
-            var stepPlan = new StepPlan(statement.Prefix.LetIdPrefix!, CommandPlan: commandPlan);
+            var stepPlan = new StepPlan(
+                statement.Prefix.LetIdPrefix!,
+                new ActionPlan(CommandPlan: commandPlan));
             var stepPlanNode = new StepPlanNode(stepPlan);
 
             return stepPlanNode;
@@ -290,8 +297,10 @@ namespace FlowPlanning
             else
             {
                 var stepPlan = statement.Prefix.ReturnPrefix
-                    ? new StepPlan("$return", ReturnIdReference: referencedId)
-                    : new StepPlan(statement.Prefix.LetIdPrefix!, IdReference: referencedId);
+                    ? new StepPlan("$return", new ActionPlan(ReturnIdReference: referencedId))
+                    : new StepPlan(
+                        statement.Prefix.LetIdPrefix!,
+                        new ActionPlan(IdReference: referencedId));
                 var stepPlanNode = new StepPlanNode(stepPlan);
 
                 stepPlanNode.AddDependencies(referencedNode);
@@ -309,7 +318,7 @@ namespace FlowPlanning
         public void CleanUnreferencedReadonlySteps()
         {   //  Initialize with the return and with all non-readonly steps
             var nodesKept = new HashSet<StepPlanNode>(AllRecursiveChildren
-                .Where(n => n.StepPlan.ReturnIdReference != null
+                .Where(n => n.StepPlan.ActionPlan.ReturnIdReference != null
                 || !n.StepPlan.IsReadOnly));
 
             foreach (var readOnlyNode in AllRecursiveChildren.Where(n => n.StepPlan.IsReadOnly))
@@ -339,47 +348,50 @@ namespace FlowPlanning
         {
             var returnNode = Children.LastOrDefault();
 
-            if (returnNode != null && returnNode.StepPlan.ReturnIdReference != null)
+            if (returnNode != null && returnNode.StepPlan.ActionPlan.ReturnIdReference != null)
             {
                 var currentNode = returnNode;
 
                 while (true)
                 {
-                    if (currentNode.StepPlan.ReturnIdReference != null)
+                    if (currentNode.StepPlan.ActionPlan.ReturnIdReference != null)
                     {   //  Climb back the dependency graph
                         currentNode = currentNode.DependsOn.First();
                     }
-                    else if (currentNode.StepPlan.IdReference != null)
+                    else if (currentNode.StepPlan.ActionPlan.IdReference != null)
                     {   //  Climb back the dependency graph
                         currentNode = currentNode.DependsOn.First();
                     }
-                    else if (currentNode.StepPlan.UnionPlan != null)
+                    else if (currentNode.StepPlan.ActionPlan.UnionPlan != null)
                     {
                         MaterializeUnion(returnNode, currentNode);
 
                         return;
                     }
-                    else if (currentNode.StepPlan.QueryPlan != null)
+                    else if (currentNode.StepPlan.ActionPlan.QueryPlan != null)
                     {   //  Switch the persistency to stored query
                         currentNode.UpdatePlan(new StepPlan(
                             currentNode.StepPlan.Id,
-                            QueryPlan: currentNode.StepPlan.QueryPlan.ToStoredQuery()));
+                            new ActionPlan(
+                                QueryPlan: currentNode.StepPlan.ActionPlan.QueryPlan.ToStoredQuery())));
 
                         return;
                     }
-                    else if (currentNode.StepPlan.ShowCommandPlan != null)
+                    else if (currentNode.StepPlan.ActionPlan.ShowCommandPlan != null)
                     {   //  Switch the persistency to stored query
                         currentNode.UpdatePlan(new StepPlan(
                             currentNode.StepPlan.Id,
-                            ShowCommandPlan: currentNode.StepPlan.ShowCommandPlan.ToStoredQuery()));
+                            new ActionPlan(
+                                ShowCommandPlan: currentNode.StepPlan.ActionPlan.ShowCommandPlan.ToStoredQuery())));
 
                         return;
                     }
-                    else if (currentNode.StepPlan.CommandPlan != null)
+                    else if (currentNode.StepPlan.ActionPlan.CommandPlan != null)
                     {   //  Switch the persistency to stored query
                         currentNode.UpdatePlan(new StepPlan(
                             currentNode.StepPlan.Id,
-                            CommandPlan: currentNode.StepPlan.CommandPlan.ToStoredQuery()));
+                            new ActionPlan(
+                                CommandPlan: currentNode.StepPlan.ActionPlan.CommandPlan.ToStoredQuery())));
 
                         return;
                     }
@@ -396,15 +408,16 @@ namespace FlowPlanning
             var materializationPlanNode = new StepPlanNode(
                 new StepPlan(
                     "$materialize",
-                    QueryPlan: new QueryPlan(
-                        currentNode.StepPlan.Id!,
-                        null,
-                        [currentNode.StepPlan.Id!],
-                        PersistanceMode.StoredQuery)));
+                    new ActionPlan(
+                        QueryPlan: new QueryPlan(
+                            currentNode.StepPlan.Id!,
+                            null,
+                            [currentNode.StepPlan.Id!],
+                            PersistanceMode.StoredQuery))));
             var newReturnPlanNode = new StepPlanNode(
                 new StepPlan(
                     "$return",
-                    ReturnIdReference: materializationPlanNode.StepPlan.Id));
+                    new ActionPlan(ReturnIdReference: materializationPlanNode.StepPlan.Id)));
 
             materializationPlanNode.AddDependencies(currentNode);
             newReturnPlanNode.AddDependencies(materializationPlanNode);
@@ -420,17 +433,17 @@ namespace FlowPlanning
                 .Select(n => n.StepPlan)
                 .ToArray();
 
-            if (StepPlan.UnionPlan != null)
+            if (StepPlan.ActionPlan.UnionPlan != null)
             {
                 UpdatePlan(new StepPlan(
                     StepPlan.Id,
-                    null,
-                    new UnionPlan(
-                        StepPlan.UnionPlan!.Iterator,
-                        StepPlan.UnionPlan!.ResultSet,
-                        StepPlan.UnionPlan!.Type,
-                        StepPlan.UnionPlan!.Concurrency,
-                        childrenPlans)));
+                    new ActionPlan(
+                        UnionPlan: new UnionPlan(
+                            StepPlan.ActionPlan.UnionPlan!.Iterator,
+                            StepPlan.ActionPlan.UnionPlan!.ResultSet,
+                            StepPlan.ActionPlan.UnionPlan!.Type,
+                            StepPlan.ActionPlan.UnionPlan!.Concurrency,
+                            childrenPlans))));
             }
             foreach (var childNode in Children)
             {
