@@ -13,5 +13,11 @@
     <ProjectReference Include="..\Kusto\Kusto.csproj" />
     <ProjectReference Include="..\Storage\Storage.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entity\Cache\" />
+    <Folder Include="Entity\State\" />
+    <Folder Include="Entity\RowItem\" />
+  </ItemGroup>
   
 </Project>
