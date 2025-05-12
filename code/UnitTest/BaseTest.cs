@@ -5,20 +5,29 @@ namespace UnitTest
 {
     public class BaseTest
     {
-        protected static string GetResource(string resourceName)
+        protected virtual string GetResource(
+            string resourceName,
+            Assembly? resourceAssembly = null)
         {
-            var type = typeof(BaseTest);
-            var assembly = type.GetTypeInfo().Assembly;
-            var typeNamespace = type.Namespace;
-            var fullResourceName = $"{typeNamespace}.{resourceName}";
+            resourceAssembly = resourceAssembly ?? typeof(BaseTest).GetTypeInfo().Assembly;
 
-            using (var stream = assembly.GetManifestResourceStream(fullResourceName))
+            var fullResourceName = resourceAssembly.GetManifestResourceNames()
+                .FirstOrDefault(name => name.EndsWith(resourceName));
+
+            if(fullResourceName == null)
+            {
+                throw new ArgumentException(
+                    $"Can't find resource file '{resourceName}'",
+                    nameof(fullResourceName));
+            }
+
+            using (var stream = resourceAssembly.GetManifestResourceStream(fullResourceName))
             {
                 if (stream == null)
                 {
                     throw new ArgumentException(
-                        $"Can't find resource file '{resourceName}'",
-                        nameof(resourceName));
+                        $"Can't load resource file '{fullResourceName}'",
+                        nameof(fullResourceName));
                 }
                 using (var reader = new StreamReader(stream))
                 {

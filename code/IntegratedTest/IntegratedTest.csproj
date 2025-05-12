@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Runtime\Runtime.csproj" />
+    <ProjectReference Include="..\UnitTest\UnitTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

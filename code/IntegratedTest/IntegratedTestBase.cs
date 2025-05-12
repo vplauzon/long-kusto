@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using UnitTest;
 
 namespace IntegratedTest
 {
-    public class IntegratedTestBase
+    public class IntegratedTestBase : BaseTest
     {
         #region Inner Types
         private class MainSettings
@@ -66,6 +68,15 @@ namespace IntegratedTest
                     Environment.SetEnvironmentVariable(variable.Key, variable.Value);
                 }
             }
+        }
+
+        protected override string GetResource(
+            string resourceName,
+            Assembly? resourceAssembly = null)
+        {
+            return base.GetResource(
+                resourceName,
+                resourceAssembly ?? this.GetType().Assembly);
         }
     }
 }

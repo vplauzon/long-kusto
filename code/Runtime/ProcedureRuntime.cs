@@ -11,6 +11,8 @@ namespace Runtime
     public class ProcedureRuntime
     {
         public ProcedureRuntime(
+            Uri clusterUri,
+            string database,
             DbClientCache dbClientCache,
             FlowPlan flowPlan)
         {
