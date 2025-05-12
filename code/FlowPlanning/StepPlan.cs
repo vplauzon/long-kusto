@@ -2,7 +2,7 @@
 namespace FlowPlanning
 {
     public record StepPlan(
-        string Id,
+        string? Id,
         QueryPlan? QueryPlan = null,
         UnionPlan? UnionPlan = null,
         ShowCommandPlan? ShowCommandPlan = null,

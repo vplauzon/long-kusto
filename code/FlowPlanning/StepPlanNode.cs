@@ -397,9 +397,9 @@ namespace FlowPlanning
                 new StepPlan(
                     "$materialize",
                     QueryPlan: new QueryPlan(
-                        currentNode.StepPlan.Id,
+                        currentNode.StepPlan.Id!,
                         null,
-                        [currentNode.StepPlan.Id],
+                        [currentNode.StepPlan.Id!],
                         PersistanceMode.StoredQuery)));
             var newReturnPlanNode = new StepPlanNode(
                 new StepPlan(

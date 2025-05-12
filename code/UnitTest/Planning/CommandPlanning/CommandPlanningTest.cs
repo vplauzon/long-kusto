@@ -11,6 +11,7 @@ namespace UnitTest.Planning.CommandPlanning
             var plan = FlowPlan.CreatePlan(text);
 
             Assert.Single(plan.Steps);
+            Assert.Null(plan.Steps[0].Id);
             Assert.NotNull(plan.Steps[0].CommandPlan);
         }
     }
