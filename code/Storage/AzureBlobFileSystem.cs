@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Storage
 {
-    internal class AzureBlobFileSystem : IFileSystem
+    public class AzureBlobFileSystem : IFileSystem
     {
         private static readonly AsyncPolicy _writeBlockRetryPolicy =
             Policy.Handle<RequestFailedException>()

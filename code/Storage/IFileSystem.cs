@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Storage
 {
     /// <summary>File system abstraction.</summary>
-    internal interface IFileSystem
+    public interface IFileSystem
     {
         /// <summary>Opens a reading stream.</summary>
         /// <param name="path"></param>

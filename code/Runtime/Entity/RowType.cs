@@ -8,7 +8,8 @@ namespace Runtime.Entity
 {
     internal enum RowType
     {
-        FileVersion,
+        FileVersionHeader,
+        ViewHeader,
         ProcedureRun,
         ProcedureRunStep
     }
