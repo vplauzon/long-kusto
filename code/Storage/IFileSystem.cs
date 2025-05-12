@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Storage
 {
+    /// <summary>File system abstraction.</summary>
     internal interface IFileSystem
     {
         /// <summary>Opens a reading stream.</summary>

@@ -1,5 +1,6 @@
 ﻿namespace Storage
 {
+    /// <summary>Blob abstraction.</summary>
     public interface IAppendStorage
     {
         /// <summary>Maximum size of buffer that can be written.</summary>
