@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Runtime
 {
-    internal class RuntimeGateway
+    public class RuntimeGateway
     {
         #region Inner Types
         public record ProcedureOutput(string OperationId, string? StoredResultName);
