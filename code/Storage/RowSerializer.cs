@@ -10,23 +10,23 @@ namespace Storage
 {
     /// <summary>Encapsulates serialization for row items.</summary>
     /// <typeparam name="RowTypeEnum">Row Type enum</typeparam>
-    public class RowItemSerializer<RowTypeEnum>
+    public class RowSerializer<RowTypeEnum>
         where RowTypeEnum : struct, Enum
     {
-        private readonly Func<Type, JsonTypeInfo> _resolver;
+        private readonly Func<Type, JsonTypeInfo?> _resolver;
         private readonly IImmutableDictionary<RowTypeEnum, Type> _RTIndex;
         private readonly IImmutableDictionary<Type, RowTypeEnum> _typeIndex;
 
         #region Constructors
-        public RowItemSerializer(Func<Type, JsonTypeInfo> resolver)
+        public RowSerializer(Func<Type, JsonTypeInfo?> resolver)
         {
             _resolver = resolver;
             _RTIndex = ImmutableDictionary<RowTypeEnum, Type>.Empty;
             _typeIndex = ImmutableDictionary<Type, RowTypeEnum>.Empty;
         }
 
-        private RowItemSerializer(
-            Func<Type, JsonTypeInfo> resolver,
+        private RowSerializer(
+            Func<Type, JsonTypeInfo?> resolver,
             IImmutableDictionary<RowTypeEnum, Type> RTIndex,
             IImmutableDictionary<Type, RowTypeEnum> typeIndex)
         {
@@ -36,11 +36,11 @@ namespace Storage
         }
         #endregion
 
-        public RowItemSerializer<RowTypeEnum> AddType<T>(RowTypeEnum RT)
+        public RowSerializer<RowTypeEnum> AddType<T>(RowTypeEnum RT)
         {
             var type = typeof(T);
 
-            return new RowItemSerializer<RowTypeEnum>(
+            return new RowSerializer<RowTypeEnum>(
                 _resolver,
                 _RTIndex.Add(RT, type),
                 _typeIndex.Add(type, RT));

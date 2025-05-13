@@ -6,8 +6,5 @@ using System.Threading.Tasks;
 
 namespace Runtime.Entity.RowItem
 {
-    internal class FileVersionHeader
-    {
-        public Version AppVersion { get; set; } = new();
-    }
+    internal record FileVersionHeader(Version? AppVersion);
 }

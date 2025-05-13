@@ -6,8 +6,5 @@ using System.Threading.Tasks;
 
 namespace Runtime.Entity.RowItem
 {
-    internal class ViewHeader
-    {
-        public long LastShard { get; set; } = 0;
-    }
+    internal record ViewHeader(long LastShard = 0);
 }
