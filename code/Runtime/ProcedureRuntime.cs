@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Runtime
 {
-    public class ProcedureRuntime
+    internal class ProcedureRuntime
     {
         public ProcedureRuntime(
             Uri clusterUri,

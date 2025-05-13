@@ -14,26 +14,18 @@ namespace IntegratedTest.Query
             var ct = new CancellationToken();
             var kustoDbUriText = Environment.GetEnvironmentVariable("kustoDbUri");
             var kustoDbUri = new Uri(kustoDbUriText!);
-            var kustoDbUriBuilder = new UriBuilder(kustoDbUri);
-            var kustoDb = kustoDbUriBuilder.Path.Trim('/');
-
-            kustoDbUriBuilder.Path = string.Empty;
-
-            var kustoClusterUri = kustoDbUriBuilder.Uri;
             var dataLakeRootUrl = Environment.GetEnvironmentVariable("dataLakeRootUrl");
-            var dataLakeRootUrlInstance = $"{dataLakeRootUrl}/{Guid.NewGuid()}";
             var credentials = new AzureCliCredential();
-            var fileSystem = new AzureBlobFileSystem(dataLakeRootUrlInstance, credentials);
-            var logStorage = await LogStorage.CreateAsync(fileSystem, ct);
-            var dbClientCache = new DbClientCache(credentials, "LK-TEST");
             var text = GetResource("Query.SimpleQuery.kql");
-            var flowPlan = FlowPlan.CreatePlan(text);
-            var procedureRuntime = new ProcedureRuntime(
-                kustoClusterUri,
-                kustoDb,
-                dbClientCache,
-                flowPlan);
-            var storedQueryResult = procedureRuntime.RunProcedureAsync(ct);
+            var runtimeGateway = await RuntimeGateway.CreateAsync(
+                credentials,
+                new Version(),
+                "LK-TEST",
+                dataLakeRootUrl!,
+                ct);
+            var procOutput = await runtimeGateway.RunProcedureAsync(text, kustoDbUri, ct);
+            var storedQueryResult = await procOutput.CompletionTask;
+
         }
     }
 }
