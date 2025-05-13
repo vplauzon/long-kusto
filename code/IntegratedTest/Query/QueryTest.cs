@@ -11,21 +11,11 @@ namespace IntegratedTest.Query
         [Fact]
         public async Task Test1()
         {
-            var ct = new CancellationToken();
-            var kustoDbUriText = Environment.GetEnvironmentVariable("kustoDbUri");
-            var kustoDbUri = new Uri(kustoDbUriText!);
-            var dataLakeRootUrl = Environment.GetEnvironmentVariable("dataLakeRootUrl");
-            var credentials = new AzureCliCredential();
+            var runtimeGateway = await CreateRuntimeGatewayAsync();
             var text = GetResource("Query.SimpleQuery.kql");
-            var runtimeGateway = await RuntimeGateway.CreateAsync(
-                credentials,
-                new Version(),
-                "LK-TEST",
-                dataLakeRootUrl!,
-                ct);
-            var procOutput = await runtimeGateway.RunProcedureAsync(text, kustoDbUri, ct);
+            var ct = new CancellationToken();
+            var procOutput = await runtimeGateway.RunProcedureAsync(text, GetKustoDbUri(), ct);
             var storedQueryResult = await procOutput.CompletionTask;
-
         }
     }
 }

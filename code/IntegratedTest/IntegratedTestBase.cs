@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Azure.Identity;
+using Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -77,6 +79,29 @@ namespace IntegratedTest
             return base.GetResource(
                 resourceName,
                 resourceAssembly ?? this.GetType().Assembly);
+        }
+
+        protected static Uri GetKustoDbUri()
+        {
+            var kustoDbUriText = Environment.GetEnvironmentVariable("kustoDbUri");
+            var kustoDbUri = new Uri(kustoDbUriText!);
+
+            return kustoDbUri;
+        }
+
+        protected static async Task<RuntimeGateway> CreateRuntimeGatewayAsync()
+        {
+            var ct = new CancellationToken();
+            var dataLakeRootUrl = Environment.GetEnvironmentVariable("dataLakeRootUrl");
+            var credentials = new AzureCliCredential();
+            var runtimeGateway = await RuntimeGateway.CreateAsync(
+                credentials,
+                new Version(),
+                "LK-TEST",
+                dataLakeRootUrl!,
+                ct);
+
+            return runtimeGateway;
         }
     }
 }
