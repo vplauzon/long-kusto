@@ -18,7 +18,12 @@ namespace Runtime
         {
         }
 
-        public async Task RunProcedureAsync(CancellationToken ct)
+        /// <summary>
+        /// Runs a procedure.
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>Stored query result if there was a return value</returns>
+        public async Task<string?> RunProcedureAsync(CancellationToken ct)
         {
             await Task.CompletedTask;
 

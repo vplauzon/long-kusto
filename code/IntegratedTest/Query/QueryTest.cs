@@ -33,6 +33,7 @@ namespace IntegratedTest.Query
                 kustoDb,
                 dbClientCache,
                 flowPlan);
+            var storedQueryResult = procedureRuntime.RunProcedureAsync(ct);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kusto;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,15 @@ namespace Runtime
 {
     internal class RuntimeGateway
     {
-        public void RunProcedure(string text, Uri databaseUri)
+        #region Inner Types
+        public record ProcedureOutput(string OperationId, string? StoredResultName);
+        #endregion
+
+        public RuntimeGateway(DbClientCache dbClientCache)
+        {
+        }
+
+        public Task<ProcedureOutput> RunProcedureAsync(string text, Uri databaseUri)
         {
             throw new NotImplementedException();
         }
