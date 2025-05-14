@@ -49,7 +49,15 @@ namespace IntegratedTest
         }
         #endregion
 
+        #region Constructor
         static IntegratedTestBase()
+        {
+            ConfigFileToEnvironmentVariables();
+            RuntimeGateway = CreateRuntimeGatewayAsync().Result;
+            KustoDbUri = GetKustoDbUri();
+        }
+
+        private static void ConfigFileToEnvironmentVariables()
         {
             const string PATH = "Properties\\launchSettings.json";
 
@@ -72,24 +80,7 @@ namespace IntegratedTest
             }
         }
 
-        protected override string GetResource(
-            string resourceName,
-            Assembly? resourceAssembly = null)
-        {
-            return base.GetResource(
-                resourceName,
-                resourceAssembly ?? this.GetType().Assembly);
-        }
-
-        protected static Uri GetKustoDbUri()
-        {
-            var kustoDbUriText = Environment.GetEnvironmentVariable("kustoDbUri");
-            var kustoDbUri = new Uri(kustoDbUriText!);
-
-            return kustoDbUri;
-        }
-
-        protected static async Task<RuntimeGateway> CreateRuntimeGatewayAsync()
+        private static async Task<RuntimeGateway> CreateRuntimeGatewayAsync()
         {
             var ct = new CancellationToken();
             var dataLakeRootUrl = Environment.GetEnvironmentVariable("dataLakeRootUrl");
@@ -98,10 +89,32 @@ namespace IntegratedTest
                 credentials,
                 new Version(),
                 "LK-TEST",
-                dataLakeRootUrl!,
+                $"{dataLakeRootUrl!}/{DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss-fff")}",
                 ct);
 
             return runtimeGateway;
+        }
+
+        private static Uri GetKustoDbUri()
+        {
+            var kustoDbUriText = Environment.GetEnvironmentVariable("kustoDbUri");
+            var kustoDbUri = new Uri(kustoDbUriText!);
+
+            return kustoDbUri;
+        }
+        #endregion
+
+        protected static RuntimeGateway RuntimeGateway { get; }
+
+        protected static Uri KustoDbUri { get; }
+
+        protected override string GetResource(
+            string resourceName,
+            Assembly? resourceAssembly = null)
+        {
+            return base.GetResource(
+                resourceName,
+                resourceAssembly ?? this.GetType().Assembly);
         }
     }
 }
