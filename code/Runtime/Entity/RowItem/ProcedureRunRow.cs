@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Runtime.Entity.State;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Runtime.Entity.RowItem
 {
-    internal class ProcedureRunRow : RowBase
+    internal class ProcedureRunRow : StateRow<ProcedureRunState, ProcedureRunRow>
     {
         public string OperationId { get; set; } = string.Empty;
 

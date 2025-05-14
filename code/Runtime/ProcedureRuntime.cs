@@ -55,13 +55,13 @@ namespace Runtime
         /// <returns>Stored query result if there was a return value</returns>
         public async Task<string?> RunProcedureAsync(CancellationToken ct)
         {
-            await RunStepsAsync(_plan.Steps, ct);
+            await RunSequenceAsync(_plan.Steps, ct);
 
             //  Stored result return
             throw new NotImplementedException();
         }
 
-        private Task RunStepsAsync(IEnumerable<StepPlan> steps, CancellationToken ct)
+        private Task RunSequenceAsync(IEnumerable<StepPlan> steps, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
