@@ -19,7 +19,7 @@ namespace Runtime
         #region Inner Types
         private record QueuedContent(
             DateTime EnqueueTime,
-            IImmutableList<IImmutableList<byte>> Buffers,
+            byte[] Buffer,
             TaskCompletionSource? RowPersistedSource);
         #endregion
 
@@ -194,7 +194,12 @@ namespace Runtime
         /// <param name="items"></param>
         public void Append(params IEnumerable<RowBase> items)
         {
-            AppendInternal(items.ToImmutableArray(), null);
+            var materializedItems = items.ToImmutableArray();
+
+            if (materializedItems.Any())
+            {
+                AppendInternal(items.ToImmutableArray(), null);
+            }
         }
 
         /// <summary>Appends many items atomically.</summary>
@@ -219,7 +224,7 @@ namespace Runtime
             IImmutableList<RowBase> items,
             TaskCompletionSource? TaskSource)
         {
-            var binaryItems = items
+            var buffers = items
                 .Select(i =>
                 {
                     i.Validate();
@@ -227,11 +232,11 @@ namespace Runtime
                     var text = _rowSerializer.Serialize(i);
                     var binaryItem = ASCIIEncoding.ASCII.GetBytes(text);
 
-                    return binaryItem.ToImmutableArray();
+                    return binaryItem;
                 })
                 .ToImmutableArray();
+            var atomicBuffers = MakeAtomicContent(buffers);
 
-            binaryItems = MakeAtomicContent(binaryItems);
             lock (_lock)
             {
                 var newCache = _inMemoryCache;
@@ -241,23 +246,32 @@ namespace Runtime
                     newCache = newCache.AppendItem(item);
                 }
                 Interlocked.Exchange(ref _inMemoryCache, newCache);
-            }
-            foreach (var binaryItem in binaryItems)
-            {
-                _contentQueue.Enqueue(new QueuedRow(DateTime.Now, binaryItem, TaskSource));
+                //  Enqueuing is done under lock for atomicity
+                foreach (var buffer in atomicBuffers)
+                {
+                    _contentQueue.Enqueue(new QueuedContent(DateTime.Now, buffer, TaskSource));
+                }
             }
         }
 
-        private IImmutableList<IImmutableList<byte>> MakeAtomicContent(
-            IImmutableList<IImmutableList<byte>> binaryItems)
+        private IImmutableList<byte[]> MakeAtomicContent(IImmutableList<byte[]> binaryItems)
         {
-            if (binaryItems.Sum(i => i.Count) <= _currentShardStorage.MaxBufferSize)
-            {
+            if (binaryItems.Count > 1)
+            {   //  Only one item:  already is atomic
                 return binaryItems;
             }
             else
             {   //  Wrap in transaction
-                throw new NotImplementedException();
+                var transactionId = Guid.NewGuid().ToString();
+                var binaryOpen = ASCIIEncoding.ASCII.GetBytes(
+                    _rowSerializer.Serialize(new TransactionBracket(transactionId, true)));
+                var binaryClose = ASCIIEncoding.ASCII.GetBytes(
+                    _rowSerializer.Serialize(new TransactionBracket(transactionId, false)));
+
+                return binaryItems
+                    .Prepend(binaryOpen)
+                    .Append(binaryClose)
+                    .ToImmutableArray();
             }
         }
         #endregion
@@ -312,8 +326,8 @@ namespace Runtime
 
                 while (true)
                 {
-                    if (!_contentQueue.TryPeek(out var queueItem)
-                        || bufferStream.Length + queueItem.Buffer.Length
+                    if (!_contentQueue.TryPeek(out var content)
+                        || bufferStream.Length + content.Buffer.Length
                             > _currentShardStorage.MaxBufferSize)
                     {   //  Flush buffer stream
                         if (bufferStream.Length == 0)
@@ -343,12 +357,12 @@ namespace Runtime
                     }
                     else
                     {   //  Append to buffer stream
-                        if (_contentQueue.TryDequeue(out queueItem))
+                        if (_contentQueue.TryDequeue(out content))
                         {
-                            bufferStream.Write(queueItem.Buffer);
-                            if (queueItem.RowPersistedSource != null)
+                            bufferStream.Write(content.Buffer);
+                            if (content.RowPersistedSource != null)
                             {
-                                sources.Add(queueItem.RowPersistedSource);
+                                sources.Add(content.RowPersistedSource);
                             }
                         }
                         else
