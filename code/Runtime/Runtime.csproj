@@ -13,9 +13,5 @@
     <ProjectReference Include="..\Kusto\Kusto.csproj" />
     <ProjectReference Include="..\Storage\Storage.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Entity\State\" />
-  </ItemGroup>
   
 </Project>
