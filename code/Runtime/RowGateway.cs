@@ -17,9 +17,9 @@ namespace Runtime
     internal class RowGateway : IAsyncDisposable
     {
         #region Inner Types
-        private record QueuedRow(
+        private record QueuedContent(
             DateTime EnqueueTime,
-            byte[] Buffer,
+            IImmutableList<IImmutableList<byte>> Buffers,
             TaskCompletionSource? RowPersistedSource);
         #endregion
 
@@ -30,7 +30,7 @@ namespace Runtime
             CreateRowSerializer();
         private readonly Version _appVersion;
         private readonly LogStorage _logStorage;
-        private readonly ConcurrentQueue<QueuedRow> _rowQueue = new();
+        private readonly ConcurrentQueue<QueuedContent> _contentQueue = new();
         private readonly ConcurrentQueue<Task> _releaseSourceTaskQueue = new();
         private readonly Task _backgroundTask;
         private readonly TaskCompletionSource _backgroundCompletedSource = new();
@@ -189,26 +189,21 @@ namespace Runtime
             await Task.WhenAll(_releaseSourceTaskQueue);
         }
 
-        public void Append(RowBase item)
+        #region Append
+        /// <summary>Appends many items atomically.</summary>
+        /// <param name="items"></param>
+        public void Append(params IEnumerable<RowBase> items)
         {
-            AppendInternal(new[] { item }, null);
+            AppendInternal(items.ToImmutableArray(), null);
         }
 
-        public void Append(IEnumerable<RowBase> items)
-        {
-            AppendInternal(items, null);
-        }
-
-        public Task AppendAndPersistAsync(RowBase item, CancellationToken ct)
-        {
-            var taskSource = new TaskCompletionSource();
-
-            AppendInternal(new[] { item }, taskSource);
-
-            return taskSource.Task;
-        }
-
-        public async Task AppendAndPersistAsync(IEnumerable<RowBase> items, CancellationToken ct)
+        /// <summary>Appends many items atomically.</summary>
+        /// <param name="ct"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public async Task AppendAndPersistAsync(
+            CancellationToken ct,
+            params IEnumerable<RowBase> items)
         {
             var materializedItems = items.ToImmutableArray();
 
@@ -216,54 +211,32 @@ namespace Runtime
             {
                 var taskSource = new TaskCompletionSource();
 
-                AppendInternal(items, taskSource);
+                AppendInternal(materializedItems, taskSource);
                 await taskSource.Task;
             }
         }
-        private static async Task<IAppendStorage> NewShardAsync(
-            LogStorage logStorage,
-            Version appVersion,
-            long shardIndex,
-            CancellationToken ct)
-        {
-            var newShardStorage = await logStorage.OpenWriteLogShardAsync(shardIndex, ct);
-            var versionHeader = new FileVersionHeader(appVersion);
-
-            using (var memoryStream = new MemoryStream())
-            {
-                JsonSerializer.Serialize(
-                    memoryStream,
-                    versionHeader,
-                    RowJsonContext.Default.FileVersionHeader);
-                memoryStream.WriteByte((byte)'\n');
-                await newShardStorage.AtomicAppendAsync(memoryStream.ToArray(), ct);
-            }
-
-            return newShardStorage;
-        }
-
-
         private void AppendInternal(
-            IEnumerable<RowBase> items,
+            IImmutableList<RowBase> items,
             TaskCompletionSource? TaskSource)
         {
-            var materializedItems = items.ToImmutableArray();
-            var binaryItems = new List<byte[]>();
+            var binaryItems = items
+                .Select(i =>
+                {
+                    i.Validate();
 
-            foreach (var item in materializedItems)
-            {
-                item.Validate();
+                    var text = _rowSerializer.Serialize(i);
+                    var binaryItem = ASCIIEncoding.ASCII.GetBytes(text);
 
-                var text = _rowSerializer.Serialize(item);
-                var binaryItem = ASCIIEncoding.ASCII.GetBytes(text);
+                    return binaryItem.ToImmutableArray();
+                })
+                .ToImmutableArray();
 
-                binaryItems.Add(binaryItem);
-            }
+            binaryItems = MakeAtomicContent(binaryItems);
             lock (_lock)
             {
                 var newCache = _inMemoryCache;
 
-                foreach (var item in materializedItems)
+                foreach (var item in items)
                 {
                     newCache = newCache.AppendItem(item);
                 }
@@ -271,15 +244,30 @@ namespace Runtime
             }
             foreach (var binaryItem in binaryItems)
             {
-                _rowQueue.Enqueue(new QueuedRow(DateTime.Now, binaryItem, TaskSource));
+                _contentQueue.Enqueue(new QueuedRow(DateTime.Now, binaryItem, TaskSource));
             }
         }
 
+        private IImmutableList<IImmutableList<byte>> MakeAtomicContent(
+            IImmutableList<IImmutableList<byte>> binaryItems)
+        {
+            if (binaryItems.Sum(i => i.Count) <= _currentShardStorage.MaxBufferSize)
+            {
+                return binaryItems;
+            }
+            else
+            {   //  Wrap in transaction
+                throw new NotImplementedException();
+            }
+        }
+        #endregion
+
+        #region Background persistance
         private async Task BackgroundPersistanceAsync(CancellationToken ct)
         {
             while (!_backgroundCompletedSource.Task.IsCompleted)
             {
-                if (_rowQueue.TryPeek(out var queueItem))
+                if (_contentQueue.TryPeek(out var queueItem))
                 {
                     var delta = DateTime.Now - queueItem.EnqueueTime;
                     var waitTime = FLUSH_PERIOD - delta;
@@ -324,7 +312,7 @@ namespace Runtime
 
                 while (true)
                 {
-                    if (!_rowQueue.TryPeek(out var queueItem)
+                    if (!_contentQueue.TryPeek(out var queueItem)
                         || bufferStream.Length + queueItem.Buffer.Length
                             > _currentShardStorage.MaxBufferSize)
                     {   //  Flush buffer stream
@@ -355,7 +343,7 @@ namespace Runtime
                     }
                     else
                     {   //  Append to buffer stream
-                        if (_rowQueue.TryDequeue(out queueItem))
+                        if (_contentQueue.TryDequeue(out queueItem))
                         {
                             bufferStream.Write(queueItem.Buffer);
                             if (queueItem.RowPersistedSource != null)
@@ -372,6 +360,7 @@ namespace Runtime
                 }
             }
         }
+        #endregion
 
         #region Persist view
         private static async Task PersistViewAsync(
@@ -448,5 +437,27 @@ namespace Runtime
             }
         }
         #endregion
+
+        private static async Task<IAppendStorage> NewShardAsync(
+            LogStorage logStorage,
+            Version appVersion,
+            long shardIndex,
+            CancellationToken ct)
+        {
+            var newShardStorage = await logStorage.OpenWriteLogShardAsync(shardIndex, ct);
+            var versionHeader = new FileVersionHeader(appVersion);
+
+            using (var memoryStream = new MemoryStream())
+            {
+                JsonSerializer.Serialize(
+                    memoryStream,
+                    versionHeader,
+                    RowJsonContext.Default.FileVersionHeader);
+                memoryStream.WriteByte((byte)'\n');
+                await newShardStorage.AtomicAppendAsync(memoryStream.ToArray(), ct);
+            }
+
+            return newShardStorage;
+        }
     }
 }
