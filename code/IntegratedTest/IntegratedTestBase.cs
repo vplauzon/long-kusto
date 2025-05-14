@@ -87,7 +87,7 @@ namespace IntegratedTest
             var credentials = new AzureCliCredential();
             var runtimeGateway = await RuntimeGateway.CreateAsync(
                 credentials,
-                new Version(),
+                new Version(int.MaxValue, 0, 0, 0),
                 "LK-TEST",
                 $"{dataLakeRootUrl!}/{DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss-fff")}",
                 ct);
