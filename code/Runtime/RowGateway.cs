@@ -308,14 +308,25 @@ namespace Runtime
                         {
                             throw new InvalidDataException("No buffer to append");
                         }
-                        await _currentShardStorage.AtomicAppendAsync(bufferStream.ToArray(), ct);
-                        //  Release tasks
-                        foreach (var source in sources)
-                        {   //  We run it on another thread not to block the persistance
-                            _releaseSourceTaskQueue.Enqueue(Task.Run(() => source.TrySetResult()));
-                        }
+                        if (await _currentShardStorage.AtomicAppendAsync(
+                            bufferStream.ToArray(),
+                            ct))
+                        {   //  Release tasks
+                            foreach (var source in sources)
+                            {   //  We run it on another thread not to block the persistance
+                                _releaseSourceTaskQueue.Enqueue(
+                                    Task.Run(() => source.TrySetResult()));
+                            }
 
-                        return;
+                            return;
+                        }
+                        else
+                        {   //  New shard
+                            ++_currentShardIndex;
+                            _currentShardStorage = await _logStorage.OpenWriteLogShardAsync(
+                                _currentShardIndex,
+                                ct);
+                        }
                     }
                     else
                     {   //  Append to buffer stream
@@ -365,7 +376,7 @@ namespace Runtime
                     viewHeader,
                     RowJsonContext.Default.ViewHeader);
                 memoryStream.WriteByte((byte)'\n');
-                await tempStorage.AtomicAppendAsync(memoryStream.ToArray(), ct);
+                await AppendLatestViewBlockAsync(tempStorage, memoryStream.ToArray(), ct);
             }
             //  Content of the view
             foreach (var character in StreamCache(cache))
@@ -373,16 +384,29 @@ namespace Runtime
                 appendBlock.Add(character);
                 if (appendBlock.Count == tempStorage.MaxBufferSize)
                 {
-                    await tempStorage.AtomicAppendAsync(appendBlock, ct);
+                    await AppendLatestViewBlockAsync(tempStorage, appendBlock, ct);
                     appendBlock.Clear();
                 }
             }
             //  Push the remainder of content
             if (appendBlock.Any())
             {
-                await tempStorage.AtomicAppendAsync(appendBlock, ct);
+                await AppendLatestViewBlockAsync(tempStorage, appendBlock, ct);
             }
             await tempBlobOutput.MoveToPermanentAsync(ct);
+        }
+
+        private static async Task AppendLatestViewBlockAsync(
+            IAppendStorage tempStorage,
+            IEnumerable<byte> appendBlock,
+            CancellationToken ct)
+        {
+            var isSuccess = await tempStorage.AtomicAppendAsync(appendBlock, ct);
+
+            if (!isSuccess)
+            {
+                throw new InvalidOperationException("Couldn't complete latest view creation");
+            }
         }
 
         private static IEnumerable<byte> StreamCache(RowInMemoryCache cache)
