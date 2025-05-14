@@ -225,7 +225,7 @@ namespace FlowPlanning
                 var unionPlan = new UnionPlan(
                     statement.InnerStatement.Union!.Iterator,
                     resultSet,
-                    GetKustoType(statement.InnerStatement.Union!.Type),
+                    GetKustoType(statement.InnerStatement.Union!.Type)!.Value,
                     concurrency,
                     Array.Empty<StepPlan>());
                 var stepPlan = new StepPlan(
@@ -240,11 +240,12 @@ namespace FlowPlanning
             }
         }
 
-        private static KustoType GetKustoType(string? type)
+        private static KustoType? GetKustoType(string? type)
         {
             switch (type)
             {
                 case null:
+                    return null;
                 case "dynamic":
                     return KustoType.Dynamic;
                 case "string":
