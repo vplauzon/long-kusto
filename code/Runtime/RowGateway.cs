@@ -20,11 +20,9 @@ namespace Runtime
         private record QueuedRow(
             DateTime EnqueueTime,
             byte[] Buffer,
-            RowInMemoryCache? SnapshotCache,
             TaskCompletionSource? RowPersistedSource);
         #endregion
 
-        private const long MAX_VOLUME_BEFORE_SNAPSHOT = 200000000;
         private static readonly TimeSpan MIN_WAIT_PERIOD = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan FLUSH_PERIOD = TimeSpan.FromSeconds(5);
 
@@ -39,7 +37,6 @@ namespace Runtime
         private readonly object _lock = new object();
         private IAppendStorage _currentShardStorage;
         private long _currentShardIndex;
-        private long _volumeSinceLastSnapshot = 0;
         private volatile RowInMemoryCache _inMemoryCache;
 
         #region Construction
@@ -228,7 +225,6 @@ namespace Runtime
         {
             var materializedItems = items.ToImmutableArray();
             var binaryItems = new List<byte[]>();
-            RowInMemoryCache? snapshot = null;
 
             foreach (var item in materializedItems)
             {
@@ -248,16 +244,10 @@ namespace Runtime
                     newCache = newCache.AppendItem(item);
                 }
                 Interlocked.Exchange(ref _inMemoryCache, newCache);
-                Interlocked.Add(ref _volumeSinceLastSnapshot, binaryItems.Sum(i => i.Length));
-                if (_volumeSinceLastSnapshot > MAX_VOLUME_BEFORE_SNAPSHOT)
-                {
-                    snapshot = newCache;
-                    Interlocked.Exchange(ref _volumeSinceLastSnapshot, 0);
-                }
             }
             foreach (var binaryItem in binaryItems)
             {
-                _rowQueue.Enqueue(new QueuedRow(DateTime.Now, binaryItem, snapshot, TaskSource));
+                _rowQueue.Enqueue(new QueuedRow(DateTime.Now, binaryItem, TaskSource));
             }
         }
 
@@ -307,7 +297,6 @@ namespace Runtime
             using (var bufferStream = new MemoryStream())
             {
                 var sources = new List<TaskCompletionSource>();
-                RowInMemoryCache? lastCache = null;
 
                 while (true)
                 {
@@ -325,10 +314,6 @@ namespace Runtime
                         {   //  We run it on another thread not to block the persistance
                             _releaseSourceTaskQueue.Enqueue(Task.Run(() => source.TrySetResult()));
                         }
-                        if (lastCache != null)
-                        {
-                            //  TODO:  refresh the view
-                        }
 
                         return;
                     }
@@ -336,7 +321,6 @@ namespace Runtime
                     {   //  Append to buffer stream
                         if (_rowQueue.TryDequeue(out queueItem))
                         {
-                            lastCache = queueItem.SnapshotCache ?? lastCache;
                             bufferStream.Write(queueItem.Buffer);
                             if (queueItem.RowPersistedSource != null)
                             {
