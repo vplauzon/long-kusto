@@ -54,6 +54,10 @@ namespace Runtime.Entity.Cache
             {
                 case ProcedureRunRow r:
                     return AppendProcedureRun(r);
+                case ProcedureRunTextRow rt:
+                    return AppendProcedureRunText(rt);
+                case ProcedureRunPlanRow rp:
+                    return AppendProcedureRunPlan(rp);
                 case ProcedureRunStepRow rs:
                     return AppendProcedureStepRun(rs);
 
@@ -66,7 +70,58 @@ namespace Runtime.Entity.Cache
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureRun(
             ProcedureRunRow row)
         {
-            throw new NotImplementedException();
+            var operationId = row.OperationId;
+
+            if (ProcedureRunMap.ContainsKey(operationId))
+            {
+                var run = ProcedureRunMap[operationId];
+
+                return ProcedureRunMap.SetItem(
+                    operationId,
+                    new ProcedureRunCache(row, run.Text, run.Plan));
+            }
+            else
+            {
+                return ProcedureRunMap.Add(operationId, new ProcedureRunCache(row));
+            }
+        }
+
+        private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureRunText(
+            ProcedureRunTextRow row)
+        {
+            var operationId = row.OperationId;
+
+            if (ProcedureRunMap.ContainsKey(operationId))
+            {
+                var run = ProcedureRunMap[operationId];
+
+                return ProcedureRunMap.SetItem(
+                    operationId,
+                    new ProcedureRunCache(run.Row, row, run.Plan));
+            }
+            else
+            {
+                throw new NotSupportedException("Procedure run should come before text");
+            }
+        }
+
+        private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureRunPlan(
+            ProcedureRunPlanRow row)
+        {
+            var operationId = row.OperationId;
+
+            if (ProcedureRunMap.ContainsKey(operationId))
+            {
+                var run = ProcedureRunMap[operationId];
+
+                return ProcedureRunMap.SetItem(
+                    operationId,
+                    new ProcedureRunCache(run.Row, run.Text, row));
+            }
+            else
+            {
+                throw new NotSupportedException("Procedure run should come before plan");
+            }
         }
 
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureStepRun(

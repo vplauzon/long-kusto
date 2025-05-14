@@ -11,6 +11,8 @@ namespace Runtime.Entity
         FileVersionHeader,
         ViewHeader,
         ProcedureRun,
+        ProcedureRunText,
+        ProcedureRunPlan,
         ProcedureRunStep
     }
 }

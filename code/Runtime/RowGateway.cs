@@ -176,6 +176,8 @@ namespace Runtime
                 .AddType<FileVersionHeader>(RowType.FileVersionHeader)
                 .AddType<ViewHeader>(RowType.ViewHeader)
                 .AddType<ProcedureRunRow>(RowType.ProcedureRun)
+                .AddType<ProcedureRunTextRow>(RowType.ProcedureRunText)
+                .AddType<ProcedureRunPlanRow>(RowType.ProcedureRunPlan)
                 .AddType<ProcedureRunStepRow>(RowType.ProcedureRunStep);
         }
         #endregion
@@ -232,6 +234,12 @@ namespace Runtime
                     var text = _rowSerializer.Serialize(i);
                     var binaryItem = ASCIIEncoding.ASCII.GetBytes(text);
 
+                    if (binaryItem.Length > _currentShardStorage.MaxBufferSize)
+                    {
+                        throw new InvalidDataException(
+                            $"Row bigger than maximum buffer size:  {binaryItem.Length} " +
+                            $"in '{text}'");
+                    }
                     return binaryItem;
                 })
                 .ToImmutableArray();

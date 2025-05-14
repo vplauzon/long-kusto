@@ -1,5 +1,8 @@
-﻿using Azure.Core;
+﻿using Azure;
+using Azure.Core;
+using FlowPlanning;
 using Kusto;
+using Runtime.Entity.RowItem;
 using Storage;
 using System;
 using System.Collections.Generic;
@@ -11,11 +14,25 @@ namespace Runtime
 {
     public class RuntimeGateway
     {
+        #region Inner Type
+        private record RunningProcedureEntry(
+            string OperationId,
+            Task RunTask,
+            CancellationToken ct);
+        #endregion
+
+        private readonly DbClientCache _dbClientCache;
+        private readonly RowGateway _rowGateway;
+        private readonly IDictionary<string, RunningProcedureEntry> _runningProcedureIndex =
+            new Dictionary<string, RunningProcedureEntry>();
+
         #region Constructors
         private RuntimeGateway(
             DbClientCache dbClientCache,
             RowGateway rowGateway)
         {
+            _dbClientCache = dbClientCache;
+            _rowGateway = rowGateway;
         }
 
         /// <summary>Factory method hidding all internal dependencies.</summary>>
@@ -40,18 +57,54 @@ namespace Runtime
         }
         #endregion
 
-        public Task<ProcedureOutput<string?>> RunProcedureAsync(
-            string text,
-            Uri databaseUri,
-            CancellationToken ct)
+        public ProcedureOutput<string?> RunProcedure(string text, Uri databaseUri)
         {
-            //var kustoDbUriBuilder = new UriBuilder(kustoDbUri);
-            //var kustoDb = kustoDbUriBuilder.Path.Trim('/');
+            (var clusterUri, var database) = ExtractClusterAndDatabase(databaseUri);
+            var plan = FlowPlan.CreatePlan(text);
+            var operationId = Guid.NewGuid().ToString();
+            var procedureRunRow = new ProcedureRunRow
+            {
+                OperationId = operationId
+            };
+            var procedureRunTextRow = new ProcedureRunTextRow
+            {
+                OperationId = operationId,
+                Text = text
+            };
+            var procedureRunPlanRow = new ProcedureRunPlanRow
+            {
+                OperationId = operationId,
+                Plan = plan
+            };
 
-            //kustoDbUriBuilder.Path = string.Empty;
+            _rowGateway.Append([procedureRunRow, procedureRunTextRow, procedureRunPlanRow]);
 
-            //var kustoClusterUri = kustoDbUriBuilder.Uri;
-            throw new NotImplementedException();
+            var procedureRuntime =
+                new ProcedureRuntime(clusterUri, database, _dbClientCache, operationId);
+            var ct = new CancellationToken();
+            var runTask = Task.Run(() => procedureRuntime.RunProcedureAsync(ct), ct);
+
+            lock (_runningProcedureIndex)
+            {
+                _runningProcedureIndex.Add(
+                    operationId,
+                    new RunningProcedureEntry(operationId, runTask, ct));
+            }
+
+            return new ProcedureOutput<string?>(operationId, runTask);
+        }
+
+        private static (Uri ClusterUri, string Database) ExtractClusterAndDatabase(
+            Uri databaseUri)
+        {
+            var databaseUriBuilder = new UriBuilder(databaseUri);
+            var database = databaseUriBuilder.Path.Trim('/');
+
+            databaseUriBuilder.Path = string.Empty;
+
+            var clusterUri = databaseUriBuilder.Uri;
+
+            return (clusterUri, database);
         }
     }
 }

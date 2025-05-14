@@ -14,7 +14,10 @@ namespace Runtime.Entity.RowItem
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(FileVersionHeader))]
     [JsonSerializable(typeof(ViewHeader))]
+    [JsonSerializable(typeof(TransactionBracket))]
     [JsonSerializable(typeof(ProcedureRunRow))]
+    [JsonSerializable(typeof(ProcedureRunTextRow))]
+    [JsonSerializable(typeof(ProcedureRunPlanRow))]
     [JsonSerializable(typeof(ProcedureRunStepRow))]
     internal partial class RowJsonContext : JsonSerializerContext
     {

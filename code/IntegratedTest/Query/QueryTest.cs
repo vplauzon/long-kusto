@@ -12,8 +12,7 @@ namespace IntegratedTest.Query
         public async Task Test1()
         {
             var text = GetResource("Query.SimpleQuery.kql");
-            var ct = new CancellationToken();
-            var procOutput = await RuntimeGateway.RunProcedureAsync(text, KustoDbUri, ct);
+            var procOutput = RuntimeGateway.RunProcedure(text, KustoDbUri);
             var storedQueryResult = await procOutput.CompletionTask;
         }
     }

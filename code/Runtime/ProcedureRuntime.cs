@@ -10,12 +10,21 @@ namespace Runtime
 {
     internal class ProcedureRuntime
     {
+        private readonly Uri _clusterUri;
+        private readonly string _database;
+        private readonly DbClientCache _dbClientCache;
+        private readonly string _operationId;
+
         public ProcedureRuntime(
             Uri clusterUri,
             string database,
             DbClientCache dbClientCache,
-            FlowPlan flowPlan)
+            string operationId)
         {
+            _clusterUri = clusterUri;
+            _database = database;
+            _dbClientCache = dbClientCache;
+            _operationId = operationId;
         }
 
         /// <summary>

@@ -8,5 +8,19 @@ namespace Runtime.Entity.Cache
             : base(row)
         {
         }
+
+        public ProcedureRunCache(
+            ProcedureRunRow row,
+            ProcedureRunTextRow? text,
+            ProcedureRunPlanRow? plan)
+            : base(row)
+        {
+            Text = text;
+            Plan = plan;
+        }
+
+        public ProcedureRunTextRow? Text { get; }
+
+        public ProcedureRunPlanRow? Plan { get; }
     }
 }

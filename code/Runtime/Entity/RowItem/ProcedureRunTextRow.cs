@@ -6,15 +6,21 @@ using System.Threading.Tasks;
 
 namespace Runtime.Entity.RowItem
 {
-    internal class ProcedureRunRow : RowBase
+    internal class ProcedureRunTextRow : RowBase
     {
         public string OperationId { get; set; } = string.Empty;
+
+        public string Text { get; set; } = string.Empty;
 
         public override void Validate()
         {
             if (string.IsNullOrWhiteSpace(OperationId))
             {
                 throw new InvalidDataException($"{nameof(OperationId)} shouldn't be empty");
+            }
+            if (string.IsNullOrWhiteSpace(Text))
+            {
+                throw new InvalidDataException($"{nameof(Text)} shouldn't be empty");
             }
         }
     }
