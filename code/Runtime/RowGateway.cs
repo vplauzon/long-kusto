@@ -76,12 +76,14 @@ namespace Runtime
                 //  Persists into a new view
                 await PersistViewAsync(appVersion, logStorage, cache, lastShard, ct);
             }
+            var currentShardStorage =
+                await NewShardAsync(logStorage, appVersion, lastShard + 1, ct);
 
             return new RowGateway(
                 appVersion,
                 logStorage,
                 lastShard + 1,
-                await logStorage.OpenWriteLogShardAsync(lastShard + 1, ct),
+                currentShardStorage,
                 cache,
                 ct);
         }
@@ -218,6 +220,28 @@ namespace Runtime
                 await taskSource.Task;
             }
         }
+        private static async Task<IAppendStorage> NewShardAsync(
+            LogStorage logStorage,
+            Version appVersion,
+            long shardIndex,
+            CancellationToken ct)
+        {
+            var newShardStorage = await logStorage.OpenWriteLogShardAsync(shardIndex, ct);
+            var versionHeader = new FileVersionHeader(appVersion);
+
+            using (var memoryStream = new MemoryStream())
+            {
+                JsonSerializer.Serialize(
+                    memoryStream,
+                    versionHeader,
+                    RowJsonContext.Default.FileVersionHeader);
+                memoryStream.WriteByte((byte)'\n');
+                await newShardStorage.AtomicAppendAsync(memoryStream.ToArray(), ct);
+            }
+
+            return newShardStorage;
+        }
+
 
         private void AppendInternal(
             IEnumerable<RowBase> items,
@@ -322,9 +346,10 @@ namespace Runtime
                         }
                         else
                         {   //  New shard
-                            ++_currentShardIndex;
-                            _currentShardStorage = await _logStorage.OpenWriteLogShardAsync(
-                                _currentShardIndex,
+                            _currentShardStorage = await NewShardAsync(
+                                _logStorage,
+                                _appVersion,
+                                ++_currentShardIndex,
                                 ct);
                         }
                     }
