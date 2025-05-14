@@ -79,8 +79,12 @@ namespace Runtime
 
             _rowGateway.Append([procedureRunRow, procedureRunTextRow, procedureRunPlanRow]);
 
-            var procedureRuntime =
-                new ProcedureRuntime(clusterUri, database, _dbClientCache, operationId);
+            var procedureRuntime = new ProcedureRuntime(
+                _rowGateway,
+                _dbClientCache,
+                clusterUri,
+                database,
+                operationId);
             var ct = new CancellationToken();
             var runTask = Task.Run(() => procedureRuntime.RunProcedureAsync(ct), ct);
 
