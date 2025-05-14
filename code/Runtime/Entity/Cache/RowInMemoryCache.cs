@@ -78,7 +78,7 @@ namespace Runtime.Entity.Cache
 
                 return ProcedureRunMap.SetItem(
                     operationId,
-                    new ProcedureRunCache(row, run.Text, run.Plan));
+                    new ProcedureRunCache(row, run.Text, run.Plan, run.StepMap));
             }
             else
             {
@@ -97,7 +97,7 @@ namespace Runtime.Entity.Cache
 
                 return ProcedureRunMap.SetItem(
                     operationId,
-                    new ProcedureRunCache(run.Row, row, run.Plan));
+                    new ProcedureRunCache(run.Row, row, run.Plan, run.StepMap));
             }
             else
             {
@@ -116,7 +116,7 @@ namespace Runtime.Entity.Cache
 
                 return ProcedureRunMap.SetItem(
                     operationId,
-                    new ProcedureRunCache(run.Row, run.Text, row));
+                    new ProcedureRunCache(run.Row, run.Text, row, run.StepMap));
             }
             else
             {
@@ -127,7 +127,20 @@ namespace Runtime.Entity.Cache
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureStepRun(
             ProcedureRunStepRow row)
         {
-            throw new NotImplementedException();
+            var operationId = row.OperationId;
+
+            if (ProcedureRunMap.ContainsKey(operationId))
+            {
+                var run = ProcedureRunMap[operationId];
+
+                return ProcedureRunMap.SetItem(
+                    operationId,
+                    run.AppendStep(row));
+            }
+            else
+            {
+                throw new NotSupportedException("Procedure run should come before step");
+            }
         }
     }
 }

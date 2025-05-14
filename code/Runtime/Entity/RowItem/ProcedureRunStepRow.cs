@@ -1,6 +1,7 @@
 ﻿using Runtime.Entity.State;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,14 @@ namespace Runtime.Entity.RowItem
         public string OperationId { get; set; } = string.Empty;
 
         public string StepPath { get; set; } = string.Empty;
+
+        public IImmutableList<long> GetStepIndexes()
+        {
+            return StepPath
+                .Split('.')
+                .Select(p => long.Parse(p))
+                .ToImmutableArray();
+        }
 
         public override void Validate()
         {
