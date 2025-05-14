@@ -1,8 +1,4 @@
-﻿using Azure.Identity;
-using FlowPlanning;
-using Kusto;
-using Runtime;
-using Storage;
+﻿using Runtime;
 
 namespace IntegratedTest.Query
 {
