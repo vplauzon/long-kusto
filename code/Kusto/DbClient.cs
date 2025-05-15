@@ -14,6 +14,7 @@ namespace Kusto
         private readonly ExecutionQueue _storedQueryQueue;
         private readonly ExecutionQueue _exportQueue;
         private readonly ExecutionQueue _commandQueue;
+        private readonly OperationAwaiter _operationAwaiter;
 
         public DbClient(
             string databaseName,
@@ -22,7 +23,8 @@ namespace Kusto
             ExecutionQueue queryQueue,
             ExecutionQueue storedQueryQueue,
             ExecutionQueue exportQueue,
-            ExecutionQueue commandQueue)
+            ExecutionQueue commandQueue,
+            OperationAwaiter operationAwaiter)
         {
             DatabaseName = databaseName;
             _queryProvider = queryProvider;
@@ -31,6 +33,7 @@ namespace Kusto
             _storedQueryQueue = storedQueryQueue;
             _exportQueue = exportQueue;
             _commandQueue = commandQueue;
+            _operationAwaiter = operationAwaiter;
         }
 
         public string DatabaseName { get; }
@@ -79,9 +82,7 @@ namespace Kusto
 
         public async Task AwaitStoredQueryResultAsync(string operationId)
         {
-            await Task.CompletedTask;
-
-            throw new NotImplementedException();
+            await _operationAwaiter.AwaitOperationCompletionAsync(operationId);
         }
     }
 }

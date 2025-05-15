@@ -136,9 +136,6 @@ namespace Runtime
                     throw new NotSupportedException(
                         $"{nameof(PersistanceMode)}.{persistanceMode}");
             }
-            await Task.CompletedTask;
-
-            throw new NotImplementedException();
         }
     }
 }

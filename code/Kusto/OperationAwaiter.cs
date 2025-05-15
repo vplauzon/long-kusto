@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Kusto
 {
-    internal class OperationAwaiter : IAsyncDisposable
+    public class OperationAwaiter : IAsyncDisposable
     {
         #region Inner Types
         private record Operation(TaskCompletionSource CompletionSource);
@@ -82,28 +82,40 @@ namespace Kusto
                 var results = await _commandQueue.RequestRunAsync(
                     async () =>
                     {
-                        var operationIdsText = string.Join(", ", GetOperationIds());
-                        var commandText = @$".show operations({operationIdsText})
-| project OperationId, Duration, State, Status, ShouldRetry";
-                        var reader = await _commandProvider.ExecuteControlCommandAsync(
-                            string.Empty,
-                            commandText);
-                        var results = reader
-                            .ToEnumerable(r => new ExportOperationStatus(
-                                ((Guid)r["OperationId"]).ToString(),
-                                (TimeSpan)r["Duration"],
-                                (string)r["State"],
-                                (string)r["Status"],
-                                Convert.ToBoolean((SByte)r["ShouldRetry"])
-                            ))
-                            .ToImmutableArray();
+                        var operationIds = GetOperationIds();
 
-                        return results;
+                        if (operationIds.Any())
+                        {
+                            var operationIdsText = string.Join(", ", GetOperationIds());
+                            var commandText = @$".show operations({operationIdsText})
+| project OperationId, Duration, State, Status, ShouldRetry";
+                            var reader = await _commandProvider.ExecuteControlCommandAsync(
+                                string.Empty,
+                                commandText);
+                            var results = reader
+                                .ToEnumerable(r => new ExportOperationStatus(
+                                    ((Guid)r["OperationId"]).ToString(),
+                                    (TimeSpan)r["Duration"],
+                                    (string)r["State"],
+                                    (string)r["Status"],
+                                    Convert.ToBoolean((SByte)r["ShouldRetry"])
+                                ))
+                                .ToImmutableArray();
+
+                            return results;
+                        }
+                        else
+                        {
+                            return ImmutableArray<ExportOperationStatus>.Empty;
+                        }
                     });
 
-                DetectLostOperationIds(results);
-                DetectFailures(results);
-                CompleteOperations(results);
+                if (results.Any())
+                {
+                    DetectLostOperationIds(results);
+                    DetectFailures(results);
+                    CompleteOperations(results);
+                }
             }
         }
 

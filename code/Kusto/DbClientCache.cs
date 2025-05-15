@@ -97,7 +97,8 @@ namespace Kusto
                 queueMap[QueueType.Query].Queue,
                 queueMap[QueueType.Command].Queue,
                 queueMap[QueueType.Export].Queue,
-                queueMap[QueueType.StoredQuery].Queue);
+                queueMap[QueueType.StoredQuery].Queue,
+                new OperationAwaiter(commandProvider, queueMap[QueueType.Command].Queue));
         }
 
         public async Task<DbIngestClient> GetDbIngestClientAsync(
