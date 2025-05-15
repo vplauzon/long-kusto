@@ -18,5 +18,27 @@ namespace Kusto
         }
 
         public string DatabaseName { get; }
+
+        public async Task<string> ExecuteQueryAsync(string text, CancellationToken ct)
+        {
+            return await _storedQueryQueue.RequestRunAsync(
+                async () =>
+                {
+                    var storedQueryResultName = $"lk_sqr_{Guid.NewGuid().ToString("N")}";
+                    var commandText = $@"
+.set async stored_query_result {storedQueryResultName} <|
+{text}
+";
+                    var reader = await _provider.ExecuteControlCommandAsync(
+                        DatabaseName,
+                        commandText);
+                    var operationId = reader
+                    .ToEnumerable(r => (Guid)r[0])
+                    .First()
+                    .ToString();
+
+                    return storedQueryResultName;
+                });
+        }
     }
 }

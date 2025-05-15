@@ -92,6 +92,25 @@ namespace Runtime
             StepPlan step,
             CancellationToken ct)
         {
+            var persistanceMode = step.ActionPlan.QueryPlan!.PersistanceMode;
+            
+            switch (persistanceMode)
+            {
+                case PersistanceMode.StoredQuery:
+                    var client = await _dbClientCache.GetDbStoredQueryClientAsync(
+                        _clusterUri,
+                        _database,
+                        ct);
+                    var storedQueryName = await client.ExecuteQueryAsync(
+                        step.ActionPlan.QueryPlan!.Text,
+                        ct);
+
+                    break;
+                case PersistanceMode.Blob:
+                default:
+                    throw new NotSupportedException(
+                        $"{nameof(PersistanceMode)}.{persistanceMode}");
+            }
             await Task.CompletedTask;
 
             throw new NotImplementedException();
