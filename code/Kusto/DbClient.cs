@@ -6,8 +6,8 @@ namespace Kusto
 {
     public class DbClient
     {
-        private static readonly ClientRequestProperties EMPTY_PROPERTIES =
-            new ClientRequestProperties();
+        private static readonly ClientRequestProperties EMPTY_PROPERTIES = new();
+
         private readonly ICslQueryProvider _queryProvider;
         private readonly ICslAdminProvider _commandProvider;
         private readonly ExecutionQueue _queryQueue;

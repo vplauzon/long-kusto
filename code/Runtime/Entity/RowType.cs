@@ -10,6 +10,7 @@ namespace Runtime.Entity
     {
         FileVersionHeader,
         ViewHeader,
+        TransactionBracket,
         ProcedureRun,
         ProcedureRunText,
         ProcedureRunPlan,

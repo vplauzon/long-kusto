@@ -175,6 +175,7 @@ namespace Runtime
             return new RowSerializer<RowType>(RowJsonContext.Default.GetTypeInfo)
                 .AddType<FileVersionHeader>(RowType.FileVersionHeader)
                 .AddType<ViewHeader>(RowType.ViewHeader)
+                .AddType<TransactionBracket>(RowType.TransactionBracket)
                 .AddType<ProcedureRunRow>(RowType.ProcedureRun)
                 .AddType<ProcedureRunTextRow>(RowType.ProcedureRunText)
                 .AddType<ProcedureRunPlanRow>(RowType.ProcedureRunPlan)
