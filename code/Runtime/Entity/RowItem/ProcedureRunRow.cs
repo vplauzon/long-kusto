@@ -9,13 +9,13 @@ namespace Runtime.Entity.RowItem
 {
     internal class ProcedureRunRow : StateRow<ProcedureRunState, ProcedureRunRow>
     {
-        public string OperationId { get; set; } = string.Empty;
+        public string RunOperationId { get; set; } = string.Empty;
 
         public override void Validate()
         {
-            if (string.IsNullOrWhiteSpace(OperationId))
+            if (string.IsNullOrWhiteSpace(RunOperationId))
             {
-                throw new InvalidDataException($"{nameof(OperationId)} shouldn't be empty");
+                throw new InvalidDataException($"{nameof(RunOperationId)} shouldn't be empty");
             }
         }
     }

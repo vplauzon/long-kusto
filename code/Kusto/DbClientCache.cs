@@ -42,106 +42,62 @@ namespace Kusto
             ((IDisposable)_providerCache).Dispose();
         }
 
-        public async Task<DbQueryClient> GetDbQueryClientAsync(
+        public async Task<DbClient> GetDbClientAsync(
             Uri clusterUri,
             string database,
             CancellationToken ct)
-        {
-            var key = new QueueKey(clusterUri, QueueType.Query);
-
-            if (!_queueMap.TryGetValue(key, out var queueValue))
+        {   //  Fetch the queues for various queue type
+            var queueMap = new[]
             {
-                _queueMap.TryAdd(key, new QueueValue(
-                    DateTime.Now,
-                    new ExecutionQueue(MAX_CONCURRENT_QUERY)));
+                QueueType.Query,
+                QueueType.Command,
+                QueueType.StoredQuery,
+                QueueType.Export
             }
-            queueValue = _queueMap[key];
+            .Select(qt =>
+            {
+                var key = new QueueKey(clusterUri, qt);
 
-            //  We ignore capacity refresh for queries
+                if (!_queueMap.TryGetValue(key, out var queueValue))
+                {
+                    _queueMap.TryAdd(key, new QueueValue(
+                        DateTime.Now,
+                        new ExecutionQueue(MAX_CONCURRENT_QUERY)));
+                }
+                queueValue = _queueMap[key];
 
+                return (QueueType: qt, QueueValue: queueValue);
+            })
+            .ToImmutableDictionary(p => p.QueueType, p => p.QueueValue);
             var queryProvider = _providerCache.GetQueryProvider(clusterUri);
-
-            await Task.CompletedTask;
-
-            return new DbQueryClient(queryProvider, queueValue.Queue, database);
-        }
-
-        public async Task<DbCommandClient> GetDbCommandClientAsync(
-            Uri clusterUri,
-            string database,
-            CancellationToken ct)
-        {
-            var key = new QueueKey(clusterUri, QueueType.Command);
-
-            if (!_queueMap.TryGetValue(key, out var queueValue))
-            {
-                _queueMap.TryAdd(key, new QueueValue(
-                    DateTime.Now,
-                    new ExecutionQueue(MAX_CONCURRENT_COMMAND)));
-            }
-            queueValue = _queueMap[key];
-
-            //  We ignore capacity refresh for commands
-
             var commandProvider = _providerCache.GetCommandProvider(clusterUri);
 
-            await Task.CompletedTask;
+            //  We ignore capacity refresh for queries & commands
 
-            return new DbCommandClient(commandProvider, queueValue.Queue, database);
-        }
-
-        public async Task<DbStoredQueryClient> GetDbStoredQueryClientAsync(
-            Uri clusterUri,
-            string database,
-            CancellationToken ct)
-        {
-            var key = new QueueKey(clusterUri, QueueType.StoredQuery);
-
-            if (!_queueMap.TryGetValue(key, out var queueValue))
-            {
-                _queueMap.TryAdd(key, new QueueValue(
-                    DateTime.Now - 2 * REFRESH_CAPACITY_PERIOD,
-                    new ExecutionQueue(1)));
-            }
-            queueValue = _queueMap[key];
-
-            var commandProvider = _providerCache.GetCommandProvider(clusterUri);
-
-            if (queueValue.LastCapacityRefresh <= DateTime.Now - REFRESH_CAPACITY_PERIOD)
+            if (queueMap[QueueType.StoredQuery].LastCapacityRefresh
+                <= DateTime.Now - REFRESH_CAPACITY_PERIOD)
             {   //  Refresh capacity
-                var capacity = await GetCapacityAsync(commandProvider, "stored-query-results", ct);
+                var capacity =
+                    await GetCapacityAsync(commandProvider, "stored-query-results", ct);
 
-                queueValue.Queue.MaxParallelRunCount = capacity;
+                queueMap[QueueType.StoredQuery].Queue.MaxParallelRunCount = capacity;
             }
-
-            return new DbStoredQueryClient(commandProvider, queueValue.Queue, database);
-        }
-
-        public async Task<DbExportClient> GetDbExportClientAsync(
-            Uri clusterUri,
-            string database,
-            CancellationToken ct)
-        {
-            var key = new QueueKey(clusterUri, QueueType.Export);
-
-            if (!_queueMap.TryGetValue(key, out var queueValue))
-            {
-                _queueMap.TryAdd(key, new QueueValue(
-                    DateTime.Now - 2 * REFRESH_CAPACITY_PERIOD,
-                    new ExecutionQueue(1)));
-            }
-            queueValue = _queueMap[key];
-
-            var commandProvider = _providerCache.GetCommandProvider(clusterUri);
-
-            if (queueValue.LastCapacityRefresh <= DateTime.Now - REFRESH_CAPACITY_PERIOD)
+            if (queueMap[QueueType.Export].LastCapacityRefresh
+                <= DateTime.Now - REFRESH_CAPACITY_PERIOD)
             {   //  Refresh capacity
                 var capacity = await GetCapacityAsync(commandProvider, "data-export", ct);
 
-                queueValue.Queue.MaxParallelRunCount = capacity;
+                queueMap[QueueType.Export].Queue.MaxParallelRunCount = capacity;
             }
 
-            return new DbExportClient(commandProvider, queueValue.Queue, database);
+            return new DbClient(
+                database,
+                queryProvider,
+                commandProvider,
+                queueMap[QueueType.Query].Queue,
+                queueMap[QueueType.Command].Queue,
+                queueMap[QueueType.Export].Queue,
+                queueMap[QueueType.StoredQuery].Queue);
         }
 
         public async Task<DbIngestClient> GetDbIngestClientAsync(
@@ -150,15 +106,15 @@ namespace Kusto
             string table,
             CancellationToken ct)
         {
-            var key = new QueueKey(clusterUri, QueueType.Ingest);
+            var ingestQueueKey = new QueueKey(clusterUri, QueueType.Ingest);
 
-            if (!_queueMap.TryGetValue(key, out var queueValue))
+            if (!_queueMap.TryGetValue(ingestQueueKey, out var ingestQueueValue))
             {
-                _queueMap.TryAdd(key, new QueueValue(
+                _queueMap.TryAdd(ingestQueueKey, new QueueValue(
                     DateTime.Now,
                     new ExecutionQueue(MAX_CONCURRENT_INGEST_QUEUING)));
             }
-            queueValue = _queueMap[key];
+            ingestQueueValue = _queueMap[ingestQueueKey];
 
             //  We ignore capacity refresh for ingest queuing
 
@@ -166,7 +122,7 @@ namespace Kusto
 
             await Task.CompletedTask;
 
-            return new DbIngestClient(ingestProvider, queueValue.Queue, database, table);
+            return new DbIngestClient(ingestProvider, ingestQueueValue.Queue, database, table);
         }
 
         private static async Task<int> GetCapacityAsync(

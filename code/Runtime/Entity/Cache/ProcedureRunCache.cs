@@ -31,16 +31,30 @@ namespace Runtime.Entity.Cache
 
         public IImmutableDictionary<long, ProcedureRunStepCache> StepMap { get; }
 
-        public ProcedureRunStepCache NavigateToStep(IEnumerable<long> indexes)
+        public ProcedureRunStepCache? NavigateToStep(IEnumerable<long> indexes)
         {
-            var step = StepMap[indexes.First()];
-
-            foreach (var i in indexes.Skip(1))
+            if (StepMap.ContainsKey(indexes.First()))
             {
-                step = step.SubStepMap[i];
-            }
+                var step = StepMap[indexes.First()];
 
-            return step;
+                foreach (var i in indexes.Skip(1))
+                {
+                    if (step.SubStepMap.ContainsKey(i))
+                    {
+                        step = step.SubStepMap[i];
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                return step;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public ProcedureRunCache AppendStep(ProcedureRunStepRow row)

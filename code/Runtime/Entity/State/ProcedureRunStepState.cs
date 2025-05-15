@@ -8,7 +8,7 @@ namespace Runtime.Entity.State
 {
     internal enum ProcedureRunStepState
     {
-        Active,
+        Running,
         Completed
     }
 }

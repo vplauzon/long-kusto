@@ -61,19 +61,19 @@ namespace Runtime
         {
             (var clusterUri, var database) = ExtractClusterAndDatabase(databaseUri);
             var plan = FlowPlan.CreatePlan(text);
-            var operationId = Guid.NewGuid().ToString();
+            var runOperationId = Guid.NewGuid().ToString();
             var procedureRunRow = new ProcedureRunRow
             {
-                OperationId = operationId
+                RunOperationId = runOperationId
             };
             var procedureRunTextRow = new ProcedureRunTextRow
             {
-                OperationId = operationId,
+                RunOperationId = runOperationId,
                 Text = text
             };
             var procedureRunPlanRow = new ProcedureRunPlanRow
             {
-                OperationId = operationId,
+                RunOperationId = runOperationId,
                 Plan = plan
             };
 
@@ -84,18 +84,18 @@ namespace Runtime
                 _dbClientCache,
                 clusterUri,
                 database,
-                operationId);
+                runOperationId);
             var ct = new CancellationToken();
             var runTask = Task.Run(() => procedureRuntime.RunProcedureAsync(ct), ct);
 
             lock (_runningProcedureIndex)
             {
                 _runningProcedureIndex.Add(
-                    operationId,
-                    new RunningProcedureEntry(operationId, runTask, ct));
+                    runOperationId,
+                    new RunningProcedureEntry(runOperationId, runTask, ct));
             }
 
-            return new ProcedureOutput<string?>(operationId, runTask);
+            return new ProcedureOutput<string?>(runOperationId, runTask);
         }
 
         private static (Uri ClusterUri, string Database) ExtractClusterAndDatabase(

@@ -9,15 +9,15 @@ namespace Runtime.Entity.RowItem
 {
     internal class ProcedureRunPlanRow : RowBase
     {
-        public string OperationId { get; set; } = string.Empty;
+        public string RunOperationId { get; set; } = string.Empty;
 
         public FlowPlan Plan { get; set; } = new FlowPlan(Array.Empty<StepPlan>());
 
         public override void Validate()
         {
-            if (string.IsNullOrWhiteSpace(OperationId))
+            if (string.IsNullOrWhiteSpace(RunOperationId))
             {
-                throw new InvalidDataException($"{nameof(OperationId)} shouldn't be empty");
+                throw new InvalidDataException($"{nameof(RunOperationId)} shouldn't be empty");
             }
             if (!Plan.Steps.Any())
             {

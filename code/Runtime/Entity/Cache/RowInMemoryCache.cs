@@ -70,7 +70,7 @@ namespace Runtime.Entity.Cache
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureRun(
             ProcedureRunRow row)
         {
-            var operationId = row.OperationId;
+            var operationId = row.RunOperationId;
 
             if (ProcedureRunMap.ContainsKey(operationId))
             {
@@ -89,7 +89,7 @@ namespace Runtime.Entity.Cache
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureRunText(
             ProcedureRunTextRow row)
         {
-            var operationId = row.OperationId;
+            var operationId = row.RunOperationId;
 
             if (ProcedureRunMap.ContainsKey(operationId))
             {
@@ -108,7 +108,7 @@ namespace Runtime.Entity.Cache
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureRunPlan(
             ProcedureRunPlanRow row)
         {
-            var operationId = row.OperationId;
+            var operationId = row.RunOperationId;
 
             if (ProcedureRunMap.ContainsKey(operationId))
             {
@@ -127,7 +127,7 @@ namespace Runtime.Entity.Cache
         private IImmutableDictionary<string, ProcedureRunCache> AppendProcedureStepRun(
             ProcedureRunStepRow row)
         {
-            var operationId = row.OperationId;
+            var operationId = row.RunOperationId;
 
             if (ProcedureRunMap.ContainsKey(operationId))
             {
